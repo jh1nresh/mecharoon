@@ -1,0 +1,678 @@
+'use client';
+
+import {useEffect, useState} from 'react';
+import {useReducedMotion} from 'motion/react';
+
+const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Reconcile', 'Receipt'];
+
+const agents = [
+  {
+    id: 'search',
+    name: 'Search Agent',
+    verdict: 'PASS',
+    amount: '$2.00',
+    settlement: 'Captured',
+    detail: 'Accepted search evidence. Capture is selected on the illustrative authorization-capable adapter.',
+  },
+  {
+    id: 'extract',
+    name: 'Extraction Agent',
+    verdict: 'REVISE',
+    amount: '$3.00',
+    settlement: 'Open reservation',
+    detail: 'Revision is requested. The reservation stays open while the child task remains active.',
+  },
+  {
+    id: 'verify',
+    name: 'Verification Agent',
+    verdict: 'FAIL',
+    amount: '$1.00',
+    settlement: 'Released',
+    detail: 'The result is rejected. Its reservation is released back to the shared ancestor budget.',
+  },
+];
+
+const modules = [
+  {
+    number: '01',
+    name: 'Governor',
+    description:
+      'Set revocable limits for parent and child agents. Reserve against every ancestor before a task can spend.',
+  },
+  {
+    number: '02',
+    name: 'Settlement Interlock',
+    description:
+      'Compare the work order, committed evidence, and evaluator verdict before selecting the next payment action.',
+  },
+  {
+    number: '03',
+    name: 'Rail Relay',
+    description:
+      'Normalize authorization, capture, refund, and unknown states from connected payment adapters.',
+  },
+  {
+    number: '04',
+    name: 'Work Receipt',
+    description:
+      'Create an append-only record linking authority, task, artifact, verdict, cost, and observed settlement state.',
+  },
+];
+
+const benchmarkTargets = [
+  '1,000 concurrent child attempts',
+  'No ancestor budget violation',
+  'One local economic effect per idempotency key',
+  'Unknown external states quarantined',
+  'Complete task-to-payment replay',
+];
+
+function BrandMark() {
+  return (
+    <span className="brand-mark" aria-hidden="true">
+      <span />
+      <span />
+      <span />
+    </span>
+  );
+}
+
+function Header() {
+  return (
+    <header className="site-header">
+      <div className="shell header-inner">
+        <a className="brand" href="#top" aria-label="Mecharoon home">
+          <BrandMark />
+          <span>MECHAROON</span>
+        </a>
+
+        <nav className="desktop-nav" aria-label="Main navigation">
+          <a href="#control">Control</a>
+          <a href="#demo">Demo</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#benchmark">Benchmark</a>
+        </nav>
+
+        <a
+          className="button button-small button-dark"
+          href="#pilot"
+        >
+          Join pilot
+        </a>
+      </div>
+    </header>
+  );
+}
+
+type TransactionPanelProps = {
+  currentStage: number;
+  isRunning: boolean;
+  onRun: () => void;
+  selectedAgent: number;
+  onSelectAgent: (index: number) => void;
+};
+
+function TransactionPanel({
+  currentStage,
+  isRunning,
+  onRun,
+  selectedAgent,
+  onSelectAgent,
+}: TransactionPanelProps) {
+  const selected = agents[selectedAgent];
+  const evaluated = currentStage >= 3;
+  const reconciled = currentStage >= 4;
+
+  return (
+    <div className="transaction-frame" aria-label="Illustrative agent transaction">
+      <div className="transaction-topline">
+        <span>ILLUSTRATIVE TRANSACTION</span>
+        <span className="live-state">
+          <span className={isRunning ? 'pulse-dot is-running' : 'pulse-dot'} />
+          {isRunning ? stages[currentStage] : 'Ready to replay'}
+        </span>
+      </div>
+
+      <div className="budget-header">
+        <div>
+          <span className="mono-label">PARENT AUTHORITY</span>
+          <strong>Research Agent</strong>
+        </div>
+        <div className="budget-value">
+          <span>Budget</span>
+          <strong>$20.00</strong>
+        </div>
+      </div>
+
+      <div className="stage-track" aria-label={`Current stage: ${stages[currentStage]}`}>
+        {stages.map((stage, index) => (
+          <span
+            className={index <= currentStage ? 'stage-node is-complete' : 'stage-node'}
+            key={stage}
+          >
+            <i />
+            <b>{stage}</b>
+          </span>
+        ))}
+      </div>
+
+      <div className="agent-list" aria-label="Delegated agent tasks">
+        {agents.map((agent, index) => {
+          const verdict = evaluated ? agent.verdict : 'PENDING';
+          const settlement = reconciled ? agent.settlement : currentStage >= 1 ? 'Reserved' : 'Waiting';
+          return (
+            <button
+              className={selectedAgent === index ? 'agent-row is-selected' : 'agent-row'}
+              type="button"
+              key={agent.id}
+              onClick={() => onSelectAgent(index)}
+              aria-pressed={selectedAgent === index}
+            >
+              <span className="agent-identity">
+                <span className={`verdict-dot verdict-${verdict.toLowerCase()}`} />
+                <span>
+                  <strong>{agent.name}</strong>
+                  <small>{settlement}</small>
+                </span>
+              </span>
+              <span className={`verdict verdict-${verdict.toLowerCase()}`}>{verdict}</span>
+              <strong className="agent-amount">{agent.amount}</strong>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="agent-detail" aria-live="polite">
+        <span>{selected.name}</span>
+        <p>{selected.detail}</p>
+      </div>
+
+      <div className="transaction-summary">
+        <div>
+          <span>Captured</span>
+          <strong>{reconciled ? '$2.00' : 'Pending'}</strong>
+        </div>
+        <div>
+          <span>Open reservation</span>
+          <strong>{reconciled ? '$3.00' : 'Pending'}</strong>
+        </div>
+        <div>
+          <span>Released</span>
+          <strong>{reconciled ? '$1.00' : 'Pending'}</strong>
+        </div>
+        <div className="available-row">
+          <span>Available</span>
+          <strong>{reconciled ? '$15.00' : '$14.00'}</strong>
+        </div>
+      </div>
+
+      <div className="receipt-strip">
+        <div>
+          <span className="mono-label">RECEIPT</span>
+          <strong>{currentStage >= 5 ? 'demo_01' : 'pending'}</strong>
+        </div>
+        <div>
+          <span className="mono-label">EXTERNAL FINALITY</span>
+          <strong>simulated</strong>
+        </div>
+        <button className="replay-button" type="button" onClick={onRun} disabled={isRunning}>
+          {isRunning ? 'Running' : 'Replay flow'}
+        </button>
+      </div>
+
+      <p className="transaction-note">
+        Illustrative authorization-capable rail. Direct irreversible payments use pay → evaluate → receipt.
+      </p>
+    </div>
+  );
+}
+
+function TaskTree() {
+  return (
+    <div className="task-tree" aria-label="Shared ancestor budget task tree">
+      <div className="tree-parent">
+        <span className="tree-kicker">SHARED ANCESTOR LIMIT</span>
+        <div>
+          <strong>Parent Research Agent</strong>
+          <b>$20.00</b>
+        </div>
+        <span className="budget-bar">
+          <i style={{width: '30%'}} />
+        </span>
+        <small>$6 reserved across descendants · $14 not yet reserved</small>
+      </div>
+
+      <div className="tree-connector" aria-hidden="true">
+        <span />
+      </div>
+
+      <div className="tree-children">
+        {agents.map((agent) => (
+          <div className="tree-child" key={agent.id}>
+            <span className={`tree-status verdict-${agent.verdict.toLowerCase()}`}>{agent.verdict}</span>
+            <strong>{agent.name}</strong>
+            <div>
+              <span>Reserved</span>
+              <b>{agent.amount}</b>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="blocked-retry">
+        <span>RETRY 02</span>
+        <strong>Blocked before spend</strong>
+        <small>Ancestor-aware reservation sees the same shared limit.</small>
+      </div>
+    </div>
+  );
+}
+
+function ArchitectureLoop() {
+  return (
+    <div className="architecture-loop">
+      <div className="loop-center" aria-hidden="true">
+        <span>CLOSED</span>
+        <strong>LOOP</strong>
+      </div>
+      {modules.map((item) => {
+        return (
+          <article className="module" key={item.name}>
+            <div className="module-heading">
+              <span>{item.number}</span>
+            </div>
+            <h3>{item.name}</h3>
+            <p>{item.description}</p>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function Home() {
+  const reduceMotion = useReducedMotion();
+  const [currentStage, setCurrentStage] = useState(stages.length - 1);
+  const [isRunning, setIsRunning] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState(0);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    if (reduceMotion || currentStage >= stages.length - 1) return;
+
+    const timer = window.setTimeout(() => {
+      const nextStage = currentStage + 1;
+      setCurrentStage(nextStage);
+      if (nextStage === stages.length - 1) setIsRunning(false);
+    }, 620);
+
+    return () => window.clearTimeout(timer);
+  }, [currentStage, isRunning, reduceMotion]);
+
+  const runDemo = () => {
+    setSelectedAgent(0);
+    if (reduceMotion) {
+      setCurrentStage(stages.length - 1);
+      setIsRunning(false);
+    } else {
+      setCurrentStage(0);
+      setIsRunning(true);
+    }
+  };
+
+  const inspectStage = (index: number) => {
+    setIsRunning(false);
+    setCurrentStage(index);
+  };
+
+  return (
+    <div id="top">
+      <Header />
+
+      <main>
+        <section className="hero shell" id="control">
+          <div className="hero-copy hero-enter">
+            <h1>
+              Financial control for
+              <br />
+              autonomous teams.
+            </h1>
+            <p className="hero-subcopy">
+              Bound every agent&apos;s budget, reconcile every payment, and trace each spend to the task and
+              accepted work.
+            </p>
+            <div className="hero-actions">
+              <a className="button button-orange" href="#demo">
+                View demo
+              </a>
+              <a
+                className="button button-outline"
+                href="#pilot"
+              >
+                Join pilot
+              </a>
+            </div>
+          </div>
+
+          <div className="hero-product hero-enter-delayed">
+            <TransactionPanel
+              currentStage={currentStage}
+              isRunning={isRunning}
+              onRun={runDemo}
+              selectedAgent={selectedAgent}
+              onSelectAgent={setSelectedAgent}
+            />
+          </div>
+        </section>
+
+        <section className="section section-rule shell">
+          <div className="section-heading problem-heading">
+            <h2>A wallet cap is not a task-tree budget.</h2>
+            <p>
+              When one agent delegates to many, retries, crashes, duplicate callbacks, and late settlements
+              can all spend against the same limit.
+            </p>
+          </div>
+
+          <div className="problem-layout">
+            <TaskTree />
+            <ol className="problem-notes">
+              <li>
+                <span>01</span>
+                <div>
+                  <strong>Shared budget</strong>
+                  <p>Every child draws against the same ancestor limits.</p>
+                </div>
+              </li>
+              <li>
+                <span>02</span>
+                <div>
+                  <strong>External uncertainty</strong>
+                  <p>A timeout is not a failed payment. Unknown states must be quarantined and reconciled.</p>
+                </div>
+              </li>
+              <li>
+                <span>03</span>
+                <div>
+                  <strong>Missing accountability</strong>
+                  <p>Payment logs rarely explain which authority, task, artifact, or accepted result caused the spend.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <section className="section demo-section" id="demo">
+          <div className="shell">
+            <div className="section-heading demo-heading">
+              <h2>One budget. Three agents. One accountable closeout.</h2>
+              <p>
+                A research agent receives a $20 work budget. Mecharoon reserves across the full authority tree,
+                then links every verdict to the next payment action.
+              </p>
+            </div>
+
+            <div className="demo-grid">
+              <div className="flow-inspector">
+                <div className="flow-tabs" role="tablist" aria-label="Transaction stages">
+                  {stages.map((stage, index) => (
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={currentStage === index}
+                      className={currentStage === index ? 'flow-tab is-current' : 'flow-tab'}
+                      onClick={() => inspectStage(index)}
+                      key={stage}
+                    >
+                      <span>{String(index + 1).padStart(2, '0')}</span>
+                      {stage}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flow-copy" aria-live="polite">
+                  <span className="mono-label">NOW INSPECTING · {stages[currentStage].toUpperCase()}</span>
+                  {currentStage === 0 && (
+                    <>
+                      <h3>Delegate bounded authority.</h3>
+                      <p>The parent can create child tasks, but it cannot create more economic authority than it received.</p>
+                    </>
+                  )}
+                  {currentStage === 1 && (
+                    <>
+                      <h3>Reserve through every ancestor.</h3>
+                      <p>$2, $3, and $1 are reserved before execution. A retry sees the same shared limit.</p>
+                    </>
+                  )}
+                  {currentStage === 2 && (
+                    <>
+                      <h3>Execute against one work order.</h3>
+                      <p>Each child task carries its authority path, idempotency key, expected artifact, and payment intent.</p>
+                    </>
+                  )}
+                  {currentStage === 3 && (
+                    <>
+                      <h3>Evaluate the committed evidence.</h3>
+                      <p>Search passes, extraction needs revision, and verification fails under the declared evaluator policy.</p>
+                    </>
+                  )}
+                  {currentStage === 4 && (
+                    <>
+                      <h3>Reconcile observed rail state.</h3>
+                      <p>Capture $2, keep $3 reserved, and release $1. Unknown external states are quarantined, not retried blindly.</p>
+                    </>
+                  )}
+                  {currentStage === 5 && (
+                    <>
+                      <h3>Close with one work receipt.</h3>
+                      <p>The receipt links authority, task, artifact, verdict, cost, and observed external settlement state.</p>
+                    </>
+                  )}
+                </div>
+
+                <button className="button button-dark run-button" type="button" onClick={runDemo} disabled={isRunning}>
+                  {isRunning ? 'Running control flow' : 'Run the full sequence'}
+                </button>
+              </div>
+
+              <div className="work-receipt">
+                <div className="receipt-header">
+                  <div>
+                    <BrandMark />
+                    <span>WORK RECEIPT</span>
+                  </div>
+                  <span className="receipt-id">demo_01</span>
+                </div>
+                <div className="receipt-state">
+                  <span>LOCAL STATE</span>
+                  <strong>{currentStage >= 5 ? 'CLOSED' : stages[currentStage].toUpperCase()}</strong>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Authority</dt>
+                    <dd>parent/research/*</dd>
+                  </div>
+                  <div>
+                    <dt>Budget</dt>
+                    <dd>$20.00</dd>
+                  </div>
+                  <div>
+                    <dt>Reserved</dt>
+                    <dd>{currentStage >= 1 ? '$6.00' : '$0.00'}</dd>
+                  </div>
+                  <div>
+                    <dt>Captured</dt>
+                    <dd>{currentStage >= 4 ? '$2.00' : 'Pending'}</dd>
+                  </div>
+                  <div>
+                    <dt>Open</dt>
+                    <dd>{currentStage >= 4 ? '$3.00' : 'Pending'}</dd>
+                  </div>
+                  <div>
+                    <dt>Released</dt>
+                    <dd>{currentStage >= 4 ? '$1.00' : 'Pending'}</dd>
+                  </div>
+                  <div>
+                    <dt>External finality</dt>
+                    <dd>simulated</dd>
+                  </div>
+                </dl>
+                <div className="receipt-verdicts">
+                  {agents.map((agent) => (
+                    <span key={agent.id}>
+                      <i className={`verdict-${currentStage >= 3 ? agent.verdict.toLowerCase() : 'pending'}`} />
+                      {agent.name.replace(' Agent', '')}
+                      <b>{currentStage >= 3 ? agent.verdict : 'PENDING'}</b>
+                    </span>
+                  ))}
+                </div>
+                <p>Illustrative only · Adapter finality is simulated · No customer funds are held by Mecharoon</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section section-rule shell" id="architecture">
+          <div className="section-heading architecture-heading">
+            <h2>Four modules. One closed loop.</h2>
+            <p>
+              Authority becomes reservation. Work becomes a verdict. External payment state returns as a
+              finance-readable receipt.
+            </p>
+          </div>
+
+          <ArchitectureLoop />
+
+          <div className="rail-boundary">
+            <div>
+              <h3>Control above the rails.</h3>
+              <p>
+                Mecharoon does not hold customer funds, issue cards, or replace payment providers. It provides one
+                policy, reservation, reconciliation, and receipt model for connected rails.
+              </p>
+            </div>
+            <div className="adapter-targets">
+              <span className="mono-label">ADAPTER TARGETS · NOT LIVE INTEGRATIONS</span>
+              <div>
+                <span>x402</span>
+                <span>API credits</span>
+                <span>Wallets</span>
+                <span>Card authorizations</span>
+                <span>Invoices</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section audience-section">
+          <div className="shell">
+            <div className="section-heading audience-heading">
+              <h2>One transaction truth for everyone who owns the risk.</h2>
+            </div>
+            <div className="audience-list">
+              <article>
+                <span>01</span>
+                <h3>Agent platforms</h3>
+                <p>Add paid agent workflows without rebuilding budget and recovery logic inside every runtime.</p>
+              </article>
+              <article>
+                <span>02</span>
+                <h3>Finance and FinOps</h3>
+                <p>Trace each spend to its authorizer, work order, accepted result, and external payment state.</p>
+              </article>
+              <article>
+                <span>03</span>
+                <h3>Security and reliability</h3>
+                <p>Stop new descendant spend after revocation and quarantine uncertain payments instead of silently retrying.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section className="section benchmark-section shell" id="benchmark">
+          <div className="benchmark-copy">
+            <h2>Proof before production.</h2>
+            <p>
+              The first public proof will test the failures that simple demos avoid: concurrency, duplicate
+              callbacks, crashes, revocation, late settlement, refunds, and reversals.
+            </p>
+            <p className="benchmark-truth">
+              This page shows the control model. The implementation benchmark has not been run yet.
+            </p>
+          </div>
+
+          <div className="benchmark-receipt">
+            <div className="benchmark-header">
+              <div>
+                <BrandMark />
+                <span>BENCHMARK TARGETS</span>
+              </div>
+              <b>NOT CURRENT RESULTS</b>
+            </div>
+            <div className="benchmark-meta">
+              <span>suite</span>
+              <strong>ledger_failure_matrix_v0</strong>
+              <span>status</span>
+              <strong>SPEC TARGET</strong>
+            </div>
+            <ul>
+              {benchmarkTargets.map((target, index) => (
+                <li key={target}>
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{target}</strong>
+                  <b>PLANNED</b>
+                </li>
+              ))}
+            </ul>
+            <div className="benchmark-footer">
+              <span>Result hash</span>
+              <strong>Awaiting implementation</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="final-cta" id="pilot">
+          <div className="shell final-cta-inner">
+            <div>
+              <h2>Do your agents already spend across two rails?</h2>
+              <p>
+                Bring one real paid workflow. We&apos;ll map its authority tree, failure states, and
+                finance-readable receipt.
+              </p>
+            </div>
+            <div className="final-actions">
+              <a
+                className="button button-orange"
+                href="https://github.com/jh1nresh/mecharoon/issues/new?title=Mecharoon%20pilot"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Join pilot
+              </a>
+              <span>No custody. No card issuing. No new payment rail.</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div className="shell footer-inner">
+          <a className="brand" href="#top" aria-label="Mecharoon home">
+            <BrandMark />
+            <span>MECHAROON</span>
+          </a>
+          <p>Agent Spend Control Plane · In development</p>
+          <div>
+            <a href="https://github.com/jh1nresh/mecharoon" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a href="#control">
+              Control model
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
