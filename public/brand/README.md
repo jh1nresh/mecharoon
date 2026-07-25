@@ -20,6 +20,7 @@ only when the product name is already visible.
 - `symbols/mecharoon-symbol-micro-color.svg` — dedicated two-band symbol at 16–20px.
 - `banners/mecharoon-banner-1600x600.*` — wide brand banner.
 - `banners/mecharoon-social-1200x630.*` — social and Open Graph banner.
+- `social/mecharoon-x-pfp-400.png` — upload-ready X profile image with circular-crop safe space.
 - `symbols/` — standalone SVG, PNG, and favicon variants.
 - `guidelines/mecharoon-brand-guide.md` — full construction and usage guide.
 

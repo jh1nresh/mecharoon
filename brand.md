@@ -111,6 +111,7 @@ Use one inner-band diameter as clear space around the symbol. For the primary lo
 - `public/brand/mecharoon-stacked-lockup-mono-reverse.svg` — stacked one-color Warm Off-White lockup.
 - `public/brand/banners/mecharoon-banner-1600x600.svg` — wide brand banner.
 - `public/brand/banners/mecharoon-social-1200x630.svg` — social and Open Graph brand banner.
+- `public/brand/social/mecharoon-x-pfp-400.png` — symbol-only X profile image with circular-crop safe space.
 - `public/brand/mecharoon-brand-package.zip` — packaged vector, raster, usage, and guideline files.
 
 ## Color system

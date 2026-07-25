@@ -19,6 +19,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const brandDir = join(root, 'public', 'brand');
 const pngDir = join(brandDir, 'png');
 const bannerDir = join(brandDir, 'banners');
+const socialDir = join(brandDir, 'social');
 const packagePath = join(brandDir, 'mecharoon-brand-package.zip');
 const packageRoot = join(tmpdir(), `mecharoon-brand-package-${process.pid}`);
 const frozenWordmarkHash = 'e231fd5043e8e718e6eb835f9bceb646c50affa434e5183bcababbcf8044b9a6';
@@ -170,6 +171,7 @@ async function setFixedTimes(path) {
 
 await mkdir(pngDir, {recursive: true});
 await mkdir(bannerDir, {recursive: true});
+await mkdir(socialDir, {recursive: true});
 
 const wordmarkPath = join(brandDir, 'mecharoon-wordmark.svg');
 const wordmark = await readFile(wordmarkPath, 'utf8');
@@ -339,8 +341,22 @@ await sharp({
   .png({compressionLevel: 9})
   .toFile(join(pngDir, 'mecharoon-logo-primary-preview.png'));
 
+const pfpSymbol = await sharp(symbolPath).resize(300, 300).png().toBuffer();
+const xPfpPath = join(socialDir, 'mecharoon-x-pfp-400.png');
+await sharp({
+  create: {
+    width: 400,
+    height: 400,
+    channels: 4,
+    background: palette.paper,
+  },
+})
+  .composite([{input: pfpSymbol, left: 50, top: 50}])
+  .png({compressionLevel: 9})
+  .toFile(xPfpPath);
+
 await rm(packageRoot, {recursive: true, force: true});
-for (const folder of ['logos', 'symbols', 'banners', 'guidelines']) {
+for (const folder of ['logos', 'symbols', 'banners', 'social', 'guidelines']) {
   await mkdir(join(packageRoot, folder), {recursive: true});
 }
 
@@ -376,6 +392,7 @@ const copies = [
   [join(bannerDir, 'mecharoon-banner-1600x600.png'), 'banners/mecharoon-banner-1600x600.png'],
   [bannerSocialPath, 'banners/mecharoon-social-1200x630.svg'],
   [join(bannerDir, 'mecharoon-social-1200x630.png'), 'banners/mecharoon-social-1200x630.png'],
+  [xPfpPath, 'social/mecharoon-x-pfp-400.png'],
   [join(root, 'brand.md'), 'guidelines/mecharoon-brand-guide.md'],
   [join(brandDir, 'README.md'), 'README.md'],
 ];
