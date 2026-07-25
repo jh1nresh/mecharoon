@@ -16,9 +16,9 @@ const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(configuredSiteUrl ?? 'http://localhost:3000'),
-  title: 'Mecharoon | Financial Control for Autonomous Teams',
+  title: 'Mecharoon | Financial Control Infrastructure for Agentic Work',
   description:
-    "Bound every agent's budget, reconcile every payment, and trace each spend to the task and accepted work.",
+    'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
   ...(configuredSiteUrl ? {alternates: {canonical: '/'}} : {}),
   robots: {
     index: Boolean(configuredSiteUrl),
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
     type: 'website',
     ...(configuredSiteUrl ? {url: configuredSiteUrl} : {}),
     siteName: 'Mecharoon',
-    title: 'Financial control for autonomous teams.',
+    title: 'The financial control infrastructure for agentic work.',
     description:
-      "Bound every agent's budget, reconcile every payment, and trace each spend to the task and accepted work.",
+      'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
     images: [
       {
         url: '/opengraph-image',
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Financial control for autonomous teams.',
+    title: 'The financial control infrastructure for agentic work.',
     description:
-      "Bound every agent's budget, reconcile every payment, and trace each spend to the task and accepted work.",
+      'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
     images: ['/opengraph-image'],
   },
 };
