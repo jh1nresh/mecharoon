@@ -360,18 +360,19 @@ export default function Home() {
       <main>
         <section className="hero shell" id="control">
           <div className="hero-copy hero-enter">
+            <span className="hero-kicker">AGENT SPEND CONTROL PLANE</span>
             <h1>
-              Financial control for
+              The financial control
               <br />
-              autonomous teams.
+              {" "}infrastructure for agentic work.
             </h1>
             <p className="hero-subcopy">
-              Bound every agent&apos;s budget, reconcile every payment, and trace each spend to the task and
-              accepted work.
+              Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work
+              that authorized it.
             </p>
             <div className="hero-actions">
               <a className="button button-accent" href="#demo">
-                View demo
+                Run the demo
               </a>
               <a
                 className="button button-outline"
@@ -397,8 +398,8 @@ export default function Home() {
           <div className="section-heading problem-heading">
             <h2>A wallet cap is not a task-tree budget.</h2>
             <p>
-              When one agent delegates to many, retries, crashes, duplicate callbacks, and late settlements
-              can all spend against the same limit.
+              Child agents, retries, and late settlements can all draw from one limit. Mecharoon reserves across
+              the entire authority tree.
             </p>
           </div>
 
@@ -662,10 +663,10 @@ export default function Home() {
         <section className="final-cta" id="pilot">
           <div className="shell final-cta-inner">
             <div>
-              <h2>Do your agents already spend across two rails?</h2>
+              <h2>Bring one paid agent workflow.</h2>
               <p>
-                Bring one real paid workflow. We&apos;ll map its authority tree, failure states, and
-                finance-readable receipt.
+                We&apos;ll map its authority tree, rail states, and finance-readable receipt before it touches
+                production spend.
               </p>
             </div>
             <div className="final-actions">
@@ -689,7 +690,7 @@ export default function Home() {
             <BrandMark />
             <BrandWordmark />
           </a>
-          <p>Agent Spend Control Plane · In development</p>
+          <p>Financial control infrastructure for agentic work.</p>
           <div>
             <a href="https://github.com/jh1nresh/mecharoon" target="_blank" rel="noreferrer">
               GitHub

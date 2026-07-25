@@ -158,7 +158,7 @@ export default function OpenGraphImage() {
                   lineHeight: 0.98,
                 }}
               >
-                Financial control for autonomous teams.
+                The financial control infrastructure for agentic work.
               </span>
               <span
                 style={{
