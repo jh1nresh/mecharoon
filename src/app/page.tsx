@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect, useState} from 'react';
+import Image from 'next/image';
 import {useReducedMotion} from 'motion/react';
 
 const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Reconcile', 'Receipt'];
@@ -67,13 +68,39 @@ const benchmarkTargets = [
   'Complete task-to-payment replay',
 ];
 
-function BrandMark() {
+function BrandMark({
+  variant = 'color',
+  micro = false,
+}: {
+  variant?: 'color' | 'reverse';
+  micro?: boolean;
+}) {
+  const asset = micro ? `mecharoon-symbol-micro-${variant}.svg` : `mecharoon-symbol-${variant}.svg`;
+
   return (
-    <span className="brand-mark" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </span>
+    <Image
+      className="brand-symbol"
+      src={`/brand/${asset}`}
+      width={24}
+      height={24}
+      alt=""
+      aria-hidden="true"
+      loading="eager"
+    />
+  );
+}
+
+function BrandWordmark() {
+  return (
+    <Image
+      className="brand-wordmark"
+      src="/brand/mecharoon-wordmark.svg"
+      width={156}
+      height={36}
+      alt=""
+      aria-hidden="true"
+      loading="eager"
+    />
   );
 }
 
@@ -83,7 +110,7 @@ function Header() {
       <div className="shell header-inner">
         <a className="brand" href="#top" aria-label="Mecharoon home">
           <BrandMark />
-          <span>MECHAROON</span>
+          <BrandWordmark />
         </a>
 
         <nav className="desktop-nav" aria-label="Main navigation">
@@ -343,7 +370,7 @@ export default function Home() {
               accepted work.
             </p>
             <div className="hero-actions">
-              <a className="button button-orange" href="#demo">
+              <a className="button button-accent" href="#demo">
                 View demo
               </a>
               <a
@@ -479,7 +506,7 @@ export default function Home() {
               <div className="work-receipt">
                 <div className="receipt-header">
                   <div>
-                    <BrandMark />
+                    <BrandMark variant="reverse" micro />
                     <span>WORK RECEIPT</span>
                   </div>
                   <span className="receipt-id">demo_01</span>
@@ -605,7 +632,7 @@ export default function Home() {
           <div className="benchmark-receipt">
             <div className="benchmark-header">
               <div>
-                <BrandMark />
+                <BrandMark micro />
                 <span>BENCHMARK TARGETS</span>
               </div>
               <b>NOT CURRENT RESULTS</b>
@@ -643,7 +670,7 @@ export default function Home() {
             </div>
             <div className="final-actions">
               <a
-                className="button button-orange"
+                className="button button-accent"
                 href="https://github.com/jh1nresh/mecharoon/issues/new?title=Mecharoon%20pilot"
                 target="_blank"
                 rel="noreferrer"
@@ -660,7 +687,7 @@ export default function Home() {
         <div className="shell footer-inner">
           <a className="brand" href="#top" aria-label="Mecharoon home">
             <BrandMark />
-            <span>MECHAROON</span>
+            <BrandWordmark />
           </a>
           <p>Agent Spend Control Plane · In development</p>
           <div>

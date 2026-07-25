@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-labelledby="title desc">
+  <title id="title">Mecharoon X profile banner</title>
+  <desc id="desc">A text-only Mecharoon banner with an empty left profile-photo safety zone.</desc>
+  <rect width="1500" height="500" fill="#F5F1E8"/>
+  <rect x="520" y="96" width="64" height="6" fill="#2C755F"/>
+  <text x="520" y="139" fill="#2C755F" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="3">AGENT SPEND CONTROL PLANE</text>
+  <line x1="520" y1="166" x2="1420" y2="166" stroke="#D6D1C7" stroke-width="2"/>
+  <text x="520" y="253" fill="#0B1F2A" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="700" letter-spacing="-2.5">
+    <tspan x="520" dy="0">Financial control for</tspan>
+    <tspan x="520" dy="78">autonomous teams.</tspan>
+  </text>
+  <text x="520" y="409" fill="#344850" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Delegate authority · Reserve atomically · Reconcile every payment
+  </text>
+</svg>

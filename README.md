@@ -26,10 +26,17 @@ Open <http://localhost:3000>.
 ```bash
 npm run lint
 npm run build
+npm run brand:export
 ```
 
 The production artifact is emitted to `out/` as a static site. It does not
 require a Next.js server at runtime.
+
+## Brand assets
+
+The final logo, standalone symbols, micro marks, banners, PNG exports, and
+portable ZIP package live under `public/brand/`. Run `npm run brand:export` to
+rebuild the raster and package outputs from the versioned SVG masters.
 
 ## Public deployment
 
