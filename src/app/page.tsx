@@ -68,11 +68,19 @@ const benchmarkTargets = [
   'Complete task-to-payment replay',
 ];
 
-function BrandMark({variant = 'color'}: {variant?: 'color' | 'reverse'}) {
+function BrandMark({
+  variant = 'color',
+  micro = false,
+}: {
+  variant?: 'color' | 'reverse';
+  micro?: boolean;
+}) {
+  const asset = micro ? `mecharoon-symbol-micro-${variant}.svg` : `mecharoon-symbol-${variant}.svg`;
+
   return (
     <Image
       className="brand-symbol"
-      src={`/brand/mecharoon-symbol-${variant}.svg`}
+      src={`/brand/${asset}`}
       width={24}
       height={24}
       alt=""
@@ -498,7 +506,7 @@ export default function Home() {
               <div className="work-receipt">
                 <div className="receipt-header">
                   <div>
-                    <BrandMark variant="reverse" />
+                    <BrandMark variant="reverse" micro />
                     <span>WORK RECEIPT</span>
                   </div>
                   <span className="receipt-id">demo_01</span>
@@ -624,7 +632,7 @@ export default function Home() {
           <div className="benchmark-receipt">
             <div className="benchmark-header">
               <div>
-                <BrandMark />
+                <BrandMark micro />
                 <span>BENCHMARK TARGETS</span>
               </div>
               <b>NOT CURRENT RESULTS</b>

@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 472 72" role="img" aria-labelledby="title desc">
-  <title id="title">Mecharoon horizontal lockup</title>
-  <desc id="desc">The Mecharoon authority-boundary symbol paired with its parent-child wordmark.</desc>
-  <defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 168" role="img" aria-labelledby="title desc">
+  <title id="title">Mecharoon stacked lockup</title>
+  <desc id="desc">The Mecharoon authority-boundary symbol is centered above its parent-child wordmark.</desc>
+  <svg x="160" y="0" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+    <g fill="none" stroke="#0B1F2A" stroke-linecap="round">
+    <path id="outer-authority" d="M24 7.3A26 26 0 0 0 17.8 53.8M47.3 11A26 26 0 0 1 44.6 54.7" stroke-width="4.4"/>
+    <path id="delegated-scope" d="M24.6 16.2A17.4 17.4 0 0 0 20.8 45.3M43.4 18.9A17.4 17.4 0 0 1 41.5 46.6" stroke-width="3.2"/>
+    <path id="executable-allowance" d="M26.7 25A8.8 8.8 0 0 0 25.6 38M38.7 26.3A8.8 8.8 0 0 1 38.3 38.1" stroke-width="1.8"/>
+  </g>
+  <circle id="reserved-transaction" cx="32" cy="32" r="3.1" fill="#2C755F"/>
+  </svg>
+  <svg x="0" y="96" width="384" height="72" viewBox="0 0 384 72" aria-hidden="true">
+    <defs>
     <path id="glyph-m" d="M81.2 0V710H250.88L450.16 153.4L648.8 710H818.48V0H692.88V496L511.48 1.08H387.84L206.8 496V0Z"/>
     <path id="glyph-e" d="M299.24-12Q219.92-12 161.64 22.36Q103.36 56.72 71.52 119.58Q39.68 182.44 39.68 266.8Q39.68 351.16 71.52 413.52Q103.36 475.88 161 510.74Q218.64 545.6 296.68 545.6Q372.16 545.6 428.94 511.66Q485.72 477.72 516.84 413.92Q547.96 350.12 547.96 260.4V232.16H168Q171.92 160.12 207.02 124.14Q242.12 88.16 300.68 88.16Q344.4 88.16 373.22 107.8Q402.04 127.44 413.6 163.12L540.32 155.04Q518.96 78.28 454.88 33.14Q390.8-12 299.24-12ZM168 316.96H419.24Q415.04 383.16 381.76 415.02Q348.48 446.88 296.68 446.88Q244.32 446.88 210.22 413.52Q176.12 380.16 168 316.96Z"/>
     <path id="glyph-c" d="M300.32-12Q221.28-12 162.82 22.36Q104.36 56.72 72.02 119.58Q39.68 182.44 39.68 266.8Q39.68 351.16 72.02 413.52Q104.36 475.88 162.82 510.74Q221.28 545.6 300.32 545.6Q367.44 545.6 420.16 521.94Q472.88 498.28 505.94 453.86Q539 409.44 547.28 346.12L419.32 339.4Q411.4 390.6 379.44 417.3Q347.48 444 300.32 444Q237.4 444 202.52 397.08Q167.64 350.16 167.64 266.8Q167.64 183.08 202.52 136.16Q237.4 89.24 300.32 89.24Q347.84 89.24 379.98 116.9Q412.12 144.56 419.32 201.32L547.28 195.32Q539.36 132 506.66 85.44Q473.96 38.88 421.24 13.44Q368.52-12 300.32-12Z"/>
@@ -10,28 +19,19 @@
     <path id="glyph-r" d="M71.36 0V533.6H186.4L191.12 386.64L180.96 389.28Q192.76 465.2 226.08 499.4Q259.4 533.6 316.84 533.6H366.68V426.96H316.76Q275.68 426.96 248.82 414.62Q221.96 402.28 208.46 376.48Q194.96 350.68 194.96 308.84V0Z"/>
     <path id="glyph-n" d="M71.36 0V533.6H183.28L188.08 385.28L173.04 391.76Q181.6 446.68 206.42 480.42Q231.24 514.16 267.46 529.88Q303.68 545.6 346.48 545.6Q405.68 545.6 445.9 519.68Q486.12 493.76 506.88 448.26Q527.64 402.76 527.64 343.16V0H404.04V303.68Q404.04 349.08 395.06 380.42Q386.08 411.76 365.22 428.18Q344.36 444.6 309.4 444.6Q257.04 444.6 226 408.44Q194.96 372.28 194.96 303.68V0Z"/>
   </defs>
-  <g transform="translate(4 8) scale(.875)">
-    <g fill="none" stroke="#0B1F2A" stroke-linecap="round">
-      <path d="M24 7.3A26 26 0 0 0 17.8 53.8M47.3 11A26 26 0 0 1 44.6 54.7" stroke-width="4.4"/>
-      <path d="M24.6 16.2A17.4 17.4 0 0 0 20.8 45.3M43.4 18.9A17.4 17.4 0 0 1 41.5 46.6" stroke-width="3.2"/>
-      <path d="M26.7 25A8.8 8.8 0 0 0 25.6 38M38.7 26.3A8.8 8.8 0 0 1 38.3 38.1" stroke-width="1.8"/>
-    </g>
-    <circle cx="32" cy="32" r="3.1" fill="#2C755F"/>
+  <g fill="#0B1F2A" transform="translate(0 60) scale(.074 -.074)">
+    <use href="#glyph-m"/>
+    <use href="#glyph-e" transform="translate(880)"/>
+    <use href="#glyph-c" transform="translate(1448)"/>
+    <use href="#glyph-h" transform="translate(2005)"/>
+    <use href="#glyph-a" transform="translate(2584)"/>
+    <use href="#glyph-r" transform="translate(3141)"/>
   </g>
-  <g transform="translate(88)">
-    <g fill="#0B1F2A" transform="translate(0 60) scale(.074 -.074)">
-      <use href="#glyph-m"/>
-      <use href="#glyph-e" transform="translate(880)"/>
-      <use href="#glyph-c" transform="translate(1448)"/>
-      <use href="#glyph-h" transform="translate(2005)"/>
-      <use href="#glyph-a" transform="translate(2584)"/>
-      <use href="#glyph-r" transform="translate(3141)"/>
-    </g>
-    <ellipse cx="280.5" cy="40.2" rx="14.5" ry="16.5" fill="none" stroke="#0B1F2A" stroke-width="7.5"/>
-    <ellipse cx="321" cy="44.7" rx="11" ry="12.6" fill="none" stroke="#0B1F2A" stroke-width="5.8"/>
-    <circle cx="302.9" cy="42.7" r="2" fill="#2C755F"/>
-    <g fill="#0B1F2A" transform="translate(341 60) scale(.074 -.074)">
-      <use href="#glyph-n"/>
-    </g>
+  <ellipse cx="280.5" cy="40.2" rx="14.5" ry="16.5" fill="none" stroke="#0B1F2A" stroke-width="7.5"/>
+  <ellipse cx="321" cy="44.7" rx="11" ry="12.6" fill="none" stroke="#0B1F2A" stroke-width="5.8"/>
+  <circle cx="302.9" cy="42.7" r="2" fill="#2C755F"/>
+  <g fill="#0B1F2A" transform="translate(341 60) scale(.074 -.074)">
+    <use href="#glyph-n"/>
   </g>
+  </svg>
 </svg>

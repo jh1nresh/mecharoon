@@ -111,12 +111,8 @@
         height: auto;
       }
 
-      .mark-point {
-        fill: var(--mark-point, currentColor);
-      }
-
       .color-mark {
-        --mark-point: var(--reserve);
+        --mark-reserve: var(--reserve);
       }
 
       .grid {
@@ -178,6 +174,18 @@
         font-weight: 650;
         line-height: 1;
         letter-spacing: -0.062em;
+      }
+
+      .lockup-copy {
+        display: grid;
+        gap: 9px;
+      }
+
+      .descriptor {
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
       }
 
       .authority-pair {
@@ -408,29 +416,41 @@
             fill="none"
             stroke="currentColor"
             stroke-linecap="round"
-            stroke-linejoin="round"
           >
             <path
-              d="M8 55V23C8 13 15 7 24 7H25L30 16M34 16L39 7H40C49 7 56 13 56 23V55"
-              stroke-width="5.5"
+              d="M24 7.3A26 26 0 0 0 17.8 53.8M47.3 11A26 26 0 0 1 44.6 54.7"
+              stroke-width="4.4"
             />
             <path
-              d="M18 53V36C18 28 23 24 29 24L30.5 31M33.5 31L35 24C41 24 46 28 46 36V53"
-              stroke-width="4.5"
+              d="M24.6 16.2A17.4 17.4 0 0 0 20.8 45.3M43.4 18.9A17.4 17.4 0 0 1 41.5 46.6"
+              stroke-width="3.2"
             />
             <path
-              d="M26 52V45C26 41 28.5 38 31 38L31.25 43M32.75 43L33 38C35.5 38 38 41 38 45V52"
-              stroke-width="3.5"
+              d="M26.7 25A8.8 8.8 0 0 0 25.6 38M38.7 26.3A8.8 8.8 0 0 1 38.3 38.1"
+              stroke-width="1.8"
             />
           </g>
-          <circle class="mark-point" cx="32" cy="47" r="3.4" />
+          <circle cx="32" cy="32" r="3.1" fill="var(--mark-reserve, currentColor)" />
+        </symbol>
+        <symbol id="mecharoon-mark-micro" viewBox="0 0 64 64">
+          <g fill="none" stroke="currentColor" stroke-linecap="round">
+            <path
+              d="M24 7.3A26 26 0 0 0 17.8 53.8M47.3 11A26 26 0 0 1 44.6 54.7"
+              stroke-width="5.2"
+            />
+            <path
+              d="M24.6 16.2A17.4 17.4 0 0 0 20.8 45.3M43.4 18.9A17.4 17.4 0 0 1 41.5 46.6"
+              stroke-width="3.6"
+            />
+          </g>
+          <circle cx="32" cy="32" r="4" fill="var(--mark-reserve, currentColor)" />
         </symbol>
       </defs>
     </svg>
 
     <main>
       <header class="topline">
-        <p class="eyebrow">Identity proof · v1</p>
+        <p class="eyebrow">Identity proof · v2</p>
         <p>Agent Spend Control Plane</p>
       </header>
 
@@ -445,7 +465,7 @@
           </p>
         </div>
         <div class="hero-mark color-mark" aria-label="Mecharoon symbol">
-          <svg role="img" aria-label="Three nested authority boundaries around a reservation point">
+          <svg role="img" aria-label="Three open authority boundaries around a reserved transaction point">
             <use href="#mecharoon-mark"></use>
           </svg>
         </div>
@@ -462,14 +482,17 @@
           <div class="lockup-stage">
             <div class="lockup color-mark">
               <svg aria-hidden="true"><use href="#mecharoon-mark"></use></svg>
-              <div class="wordmark" aria-label="Mecharoon">
-                <span aria-hidden="true">Mechar</span>
-                <span class="authority-pair" aria-hidden="true">
-                  <i class="authority-o parent"></i>
-                  <i class="authority-o child"></i>
-                  <i class="handoff-point"></i>
-                </span>
-                <span aria-hidden="true">n</span>
+              <div class="lockup-copy">
+                <div class="wordmark" aria-label="Mecharoon">
+                  <span aria-hidden="true">Mechar</span>
+                  <span class="authority-pair" aria-hidden="true">
+                    <i class="authority-o parent"></i>
+                    <i class="authority-o child"></i>
+                    <i class="handoff-point"></i>
+                  </span>
+                  <span aria-hidden="true">n</span>
+                </div>
+                <p class="descriptor">Agent Spend Control Plane</p>
               </div>
             </div>
           </div>
@@ -479,14 +502,18 @@
           <p class="label">Small-size proof</p>
           <h2>One-color first</h2>
           <p>
-            At 16px the transaction point joins the brackets in one color.
-            Separated crown notches preserve the nested M aperture without
-            becoming a target or broadcast icon.
+            The three-band primary starts at 24px. At 16–20px the dedicated
+            two-band micro preserves a detached transaction point without
+            forcing the full construction to blur.
           </p>
           <div class="scale-stage">
             <div class="scale" style="--size: 16px">
-              <svg aria-hidden="true"><use href="#mecharoon-mark"></use></svg>
+              <svg aria-hidden="true"><use href="#mecharoon-mark-micro"></use></svg>
               <span>16</span>
+            </div>
+            <div class="scale" style="--size: 20px">
+              <svg aria-hidden="true"><use href="#mecharoon-mark-micro"></use></svg>
+              <span>20</span>
             </div>
             <div class="scale" style="--size: 24px">
               <svg aria-hidden="true"><use href="#mecharoon-mark"></use></svg>

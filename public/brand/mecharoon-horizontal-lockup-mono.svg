@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 472 72" role="img" aria-labelledby="title desc">
-  <title id="title">Mecharoon horizontal lockup</title>
+  <title id="title">Mecharoon monochrome horizontal lockup</title>
   <desc id="desc">The Mecharoon authority-boundary symbol paired with its parent-child wordmark.</desc>
   <defs>
     <path id="glyph-m" d="M81.2 0V710H250.88L450.16 153.4L648.8 710H818.48V0H692.88V496L511.48 1.08H387.84L206.8 496V0Z"/>
@@ -16,7 +16,7 @@
       <path d="M24.6 16.2A17.4 17.4 0 0 0 20.8 45.3M43.4 18.9A17.4 17.4 0 0 1 41.5 46.6" stroke-width="3.2"/>
       <path d="M26.7 25A8.8 8.8 0 0 0 25.6 38M38.7 26.3A8.8 8.8 0 0 1 38.3 38.1" stroke-width="1.8"/>
     </g>
-    <circle cx="32" cy="32" r="3.1" fill="#2C755F"/>
+    <circle cx="32" cy="32" r="3.1" fill="#0B1F2A"/>
   </g>
   <g transform="translate(88)">
     <g fill="#0B1F2A" transform="translate(0 60) scale(.074 -.074)">
@@ -29,7 +29,7 @@
     </g>
     <ellipse cx="280.5" cy="40.2" rx="14.5" ry="16.5" fill="none" stroke="#0B1F2A" stroke-width="7.5"/>
     <ellipse cx="321" cy="44.7" rx="11" ry="12.6" fill="none" stroke="#0B1F2A" stroke-width="5.8"/>
-    <circle cx="302.9" cy="42.7" r="2" fill="#2C755F"/>
+    <circle cx="302.9" cy="42.7" r="2" fill="#0B1F2A"/>
     <g fill="#0B1F2A" transform="translate(341 60) scale(.074 -.074)">
       <use href="#glyph-n"/>
     </g>

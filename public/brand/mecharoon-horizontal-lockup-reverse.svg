@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 472 72" role="img" aria-labelledby="title desc">
-  <title id="title">Mecharoon horizontal lockup</title>
+  <title id="title">Mecharoon reverse horizontal lockup</title>
   <desc id="desc">The Mecharoon authority-boundary symbol paired with its parent-child wordmark.</desc>
   <defs>
     <path id="glyph-m" d="M81.2 0V710H250.88L450.16 153.4L648.8 710H818.48V0H692.88V496L511.48 1.08H387.84L206.8 496V0Z"/>
@@ -11,7 +11,7 @@
     <path id="glyph-n" d="M71.36 0V533.6H183.28L188.08 385.28L173.04 391.76Q181.6 446.68 206.42 480.42Q231.24 514.16 267.46 529.88Q303.68 545.6 346.48 545.6Q405.68 545.6 445.9 519.68Q486.12 493.76 506.88 448.26Q527.64 402.76 527.64 343.16V0H404.04V303.68Q404.04 349.08 395.06 380.42Q386.08 411.76 365.22 428.18Q344.36 444.6 309.4 444.6Q257.04 444.6 226 408.44Q194.96 372.28 194.96 303.68V0Z"/>
   </defs>
   <g transform="translate(4 8) scale(.875)">
-    <g fill="none" stroke="#0B1F2A" stroke-linecap="round">
+    <g fill="none" stroke="#F5F1E8" stroke-linecap="round">
       <path d="M24 7.3A26 26 0 0 0 17.8 53.8M47.3 11A26 26 0 0 1 44.6 54.7" stroke-width="4.4"/>
       <path d="M24.6 16.2A17.4 17.4 0 0 0 20.8 45.3M43.4 18.9A17.4 17.4 0 0 1 41.5 46.6" stroke-width="3.2"/>
       <path d="M26.7 25A8.8 8.8 0 0 0 25.6 38M38.7 26.3A8.8 8.8 0 0 1 38.3 38.1" stroke-width="1.8"/>
@@ -19,7 +19,7 @@
     <circle cx="32" cy="32" r="3.1" fill="#2C755F"/>
   </g>
   <g transform="translate(88)">
-    <g fill="#0B1F2A" transform="translate(0 60) scale(.074 -.074)">
+    <g fill="#F5F1E8" transform="translate(0 60) scale(.074 -.074)">
       <use href="#glyph-m"/>
       <use href="#glyph-e" transform="translate(880)"/>
       <use href="#glyph-c" transform="translate(1448)"/>
@@ -27,10 +27,10 @@
       <use href="#glyph-a" transform="translate(2584)"/>
       <use href="#glyph-r" transform="translate(3141)"/>
     </g>
-    <ellipse cx="280.5" cy="40.2" rx="14.5" ry="16.5" fill="none" stroke="#0B1F2A" stroke-width="7.5"/>
-    <ellipse cx="321" cy="44.7" rx="11" ry="12.6" fill="none" stroke="#0B1F2A" stroke-width="5.8"/>
+    <ellipse cx="280.5" cy="40.2" rx="14.5" ry="16.5" fill="none" stroke="#F5F1E8" stroke-width="7.5"/>
+    <ellipse cx="321" cy="44.7" rx="11" ry="12.6" fill="none" stroke="#F5F1E8" stroke-width="5.8"/>
     <circle cx="302.9" cy="42.7" r="2" fill="#2C755F"/>
-    <g fill="#0B1F2A" transform="translate(341 60) scale(.074 -.074)">
+    <g fill="#F5F1E8" transform="translate(341 60) scale(.074 -.074)">
       <use href="#glyph-n"/>
     </g>
   </g>

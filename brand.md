@@ -12,32 +12,32 @@ Mecharoon should feel like financial infrastructure with judgment: exact, calm, 
 
 ## Identity idea
 
-### The authority aperture
+### The bounded authority chamber
 
-The symbol is built from three nested incomplete rounded-bracket boundaries around one transaction point.
+The symbol is built from three open circular boundaries around one reserved transaction point.
 
-- The **outer band** is the principal authority boundary.
+- The **outer band** is principal authority.
 - The **middle band** is delegated policy scope.
 - The **inner band** is the child agent's executable allowance.
-- The **transaction point** is the budget reservation: one amount, one intent, one atomic commitment.
-- Each boundary is split at its crown and remains open below. The nested negative channels create two outer legs and a central notch, suggesting an `M` without adding a separate letter.
-- The downward aperture leads to the transaction point; the same controlled path returns outward as reconciliation. Execution is not complete until the reservation resolves into a receipt.
+- The centered **Reserved Green point** is one amount held atomically before execution and resolved through reconciliation.
+- The arc terminals are optically offset rather than mechanically mirrored. Authority attenuates inward toward one bounded action.
 
-The mark is intentionally geometric, open, and procedural. It should never imply physical custody or absolute security.
+The mark is intentionally geometric, open, and procedural. Its signal-like familiarity is a deliberate founder choice; do not amplify it with radio, pulse, or broadcast language.
 
 ### Construction
 
 - Base grid: `64 × 64`.
 - Center: `32, 32`.
-- Three vertically nested rounded-bracket boundaries with visibly different scales.
+- Three circular centerlines with visibly different scales.
 - Rounded terminals only.
-- The crown notches remain separated so all three boundaries are legible at `16px`.
-- The transaction point sits on the vertical centerline inside the narrowest executable boundary.
-- Master geometry uses strokes of `5.5`, `4.5`, and `3.5` on the `64 × 64` grid; the point is centered at `32, 47` with radius `3.4`.
-- In the color mark, bands are Deep Ink and the point is Reserved Green.
+- Each band has separate left and right arcs with deliberately unequal terminal angles.
+- The transaction point is centered at `32, 32` inside the narrowest executable boundary.
+- Master geometry uses radii of `26`, `17.4`, and `8.8` with strokes of `4.4`, `3.2`, and `1.8` on the `64 × 64` grid.
+- The transaction point has a `3.1` radius.
+- In the color mark, bands are Deep Ink and the transaction point is Reserved Green.
 - In the one-color mark, every element uses the same color.
 
-Do not add shadows, gradients, outlines around the entire mark, decorative nodes, connecting lines, or additional rings.
+Do not add shadows, gradients, outlines around the entire mark, decorative nodes, connecting lines, additional rings, or radiating animation.
 
 ## Wordmark
 
@@ -57,22 +57,32 @@ Never exaggerate the pair into bubbles, eyes, chain links, infinity loops, or a 
 
 ### Primary lockup
 
-Symbol on the left, followed by the `Mecharoon` wordmark. Use for navigation, product chrome, sales material, and presentation covers.
+Symbol on the left, followed by the `Mecharoon` wordmark and the `Agent Spend Control Plane` descriptor. This is the official primary logo for sales material, presentation covers, and brand-led surfaces.
+
+### Compact lockup
+
+Symbol on the left, followed by the `Mecharoon` wordmark without the descriptor. Use for navigation and product chrome. Do not force the descriptor below its readable size.
+
+### Stacked lockup
+
+Symbol centered above the `Mecharoon` wordmark. Use for square or portrait presentation covers, partner grids, and placements where the horizontal lockup would become too small.
 
 ### Symbol
 
-Use alone for the favicon, app icon, avatar, compact control surfaces, and diagram nodes.
+Use the three-band symbol alone at `24px` and above for avatars, control surfaces, and diagram nodes. Use the dedicated two-band micro symbol for favicons and any `16–20px` placement.
 
 ### One-color
 
-The one-color mark is the master durability test. Use Deep Ink on light surfaces or Warm Off-White on dark surfaces. The central point must not disappear; it takes the same color as the bands.
+The one-color mark is the master durability test. Use Deep Ink on light surfaces or Warm Off-White on dark surfaces. The transaction point must remain visibly detached from the inner boundary.
 
 ### Minimum sizes
 
-- Symbol: `16px` minimum digital size.
-- Primary lockup: `112px` minimum digital width.
-- Below `24px`, use the symbol only and use the one-color construction.
-- At `16px`, preserve all three bracket boundaries, their separated crown notches, and the center point. Do not reduce stroke opacity.
+- Primary symbol: `24px` minimum digital size.
+- Micro symbol: `16px` minimum and `20px` preferred digital size.
+- Primary logo with descriptor: `220px` minimum digital width.
+- Compact lockup: `112px` minimum digital width.
+- Below `24px`, use the two-band micro symbol only.
+- At `16px`, the two bands and central point must remain separate in pure black. Do not reduce stroke opacity.
 
 ### Clear space
 
@@ -80,11 +90,28 @@ Use one inner-band diameter as clear space around the symbol. For the primary lo
 
 ### Asset inventory
 
-- `public/brand/mecharoon-symbol-color.svg` — Deep Ink bands with the Reserved Green transaction point.
+- `public/brand/mecharoon-symbol-color.svg` — three-band color symbol with the Reserved Green transaction point.
 - `public/brand/mecharoon-symbol-mono.svg` — Deep Ink one-color durability master.
 - `public/brand/mecharoon-symbol-reverse.svg` — Warm Off-White one-color mark for Deep Ink surfaces.
+- `public/brand/mecharoon-symbol-micro-color.svg` — dedicated two-band color mark for compact surfaces.
+- `public/brand/mecharoon-symbol-micro-mono.svg` — Deep Ink micro durability master.
+- `public/brand/mecharoon-symbol-micro-reverse.svg` — Warm Off-White micro mark for dark compact surfaces.
 - `public/brand/mecharoon-wordmark.svg` — outlined wordmark with the parent/child `oo`.
-- `public/brand/mecharoon-horizontal-lockup.svg` — primary symbol-and-wordmark lockup.
+- `public/brand/mecharoon-primary-logo.svg` — official logo with descriptor.
+- `public/brand/mecharoon-primary-logo-reverse.svg` — official color-accent logo for Deep Ink.
+- `public/brand/mecharoon-primary-logo-mono.svg` — official one-color Deep Ink logo.
+- `public/brand/mecharoon-primary-logo-mono-reverse.svg` — official one-color Warm Off-White logo.
+- `public/brand/mecharoon-horizontal-lockup.svg` — compact symbol-and-wordmark lockup.
+- `public/brand/mecharoon-horizontal-lockup-reverse.svg` — reverse lockup for Deep Ink surfaces.
+- `public/brand/mecharoon-horizontal-lockup-mono.svg` — one-color Deep Ink lockup.
+- `public/brand/mecharoon-horizontal-lockup-mono-reverse.svg` — one-color Warm Off-White lockup.
+- `public/brand/mecharoon-stacked-lockup.svg` — stacked color lockup.
+- `public/brand/mecharoon-stacked-lockup-reverse.svg` — stacked color-accent lockup for Deep Ink.
+- `public/brand/mecharoon-stacked-lockup-mono.svg` — stacked one-color Deep Ink lockup.
+- `public/brand/mecharoon-stacked-lockup-mono-reverse.svg` — stacked one-color Warm Off-White lockup.
+- `public/brand/banners/mecharoon-banner-1600x600.svg` — wide brand banner.
+- `public/brand/banners/mecharoon-social-1200x630.svg` — social and Open Graph brand banner.
+- `public/brand/mecharoon-brand-package.zip` — packaged vector, raster, usage, and guideline files.
 
 ## Color system
 
@@ -92,7 +119,7 @@ Use one inner-band diameter as clear space around the symbol. For the primary lo
 |---|---:|---|
 | Deep Ink | `#0B1F2A` | Primary text, symbol bands, dark surfaces |
 | Warm Off-White | `#F5F1E8` | Primary canvas, reverse text |
-| Reserved Green | `#2C755F` | Reservation point, approved control action, focused proof |
+| Reserved Green | `#2C755F` | Reserved transaction point, approved control action, focused proof |
 | Ink Soft | `#344850` | Secondary headings and dense interface text |
 | Muted | `#5F6B70` | Supporting copy and metadata |
 | Line | `#D6D1C7` | Dividers, quiet boundaries, inactive controls |
@@ -131,7 +158,7 @@ Use **Geist Mono** for amounts, policy identifiers, timestamps, receipt hashes, 
 
 ### Wordmark
 
-The product wordmark is a custom treatment based on Geist's proportions. Do not recreate it by typing a standard font and leaving both `o` glyphs unchanged.
+The product wordmark is a custom treatment based on IBM Plex Sans. Do not recreate it by typing a standard font and leaving both `o` glyphs unchanged.
 
 ## Voice
 
@@ -169,7 +196,7 @@ Use:
 - Deliberate spacing
 - Thin structural rules
 - Real transaction states
-- One focused Reserved Green proof point
+- One focused Reserved Green transaction point
 
 Avoid:
 
@@ -185,12 +212,13 @@ Avoid:
 - Generic AI sparkles
 - Radar, broadcast, or Wi-Fi treatment
 
-Never reconstruct the symbol as concentric circles. The nested M-aperture brackets are deliberately non-radial so the mark cannot collapse into broadcast waves or a target.
+Never close the bands into rings, mechanically mirror all exposed terminals, add more dots, or animate the mark as radiating waves. The single Reserved Green center is the approved concept construction.
 
 ## Application rules
 
 - Warm Off-White is the default brand canvas; Deep Ink is the default text color.
 - Use the symbol at the start of a control flow, not as a repeated decorative bullet.
+- Use the primary symbol at `24px` and above; use the dedicated micro below `24px`.
 - Let product evidence carry the page: budget, authorization, reservation, settlement, and reconciliation receipts.
 - Keep cards flat or nearly flat. Boundaries should come from line, spacing, and hierarchy, not heavy shadow.
 - Motion, when present, should show delegation inward and reconciliation outward. Avoid pulsing, orbiting, or continuous scanning.
@@ -199,9 +227,11 @@ Never reconstruct the symbol as concentric circles. The nested M-aperture bracke
 
 ## Review checklist
 
-- Does the symbol remain identifiable at `16px` in one color?
-- Are all three bands and the center point visible?
-- Are the three M-aperture boundaries distinct rather than concentric or wave-like?
+- Does the two-band micro symbol remain identifiable at `16px` in one color?
+- Are all three primary bands countable at `24px`?
+- Is the centered Reserved Green point visible and detached?
+- Is there exactly one center point?
+- Are the exposed terminals optically offset rather than mechanically mirrored?
 - Does the double `oo` clearly show parent and child authority?
 - Is Reserved Green attached to a real reservation or proof state?
 - Is the product described as a control plane rather than a payment rail?
