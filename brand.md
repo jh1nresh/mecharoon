@@ -112,6 +112,8 @@ Use one inner-band diameter as clear space around the symbol. For the primary lo
 - `public/brand/banners/mecharoon-banner-1600x600.svg` — wide brand banner.
 - `public/brand/banners/mecharoon-social-1200x630.svg` — social and Open Graph brand banner.
 - `public/brand/social/mecharoon-x-pfp-400.png` — symbol-only X profile image with circular-crop safe space.
+- `public/brand/social/mecharoon-x-banner-1500x500.svg` — text-only X header with a blank profile-photo safety zone.
+- `public/brand/social/mecharoon-x-profile-preview.png` — placement preview for the X header and PFP overlap.
 - `public/brand/mecharoon-brand-package.zip` — packaged vector, raster, usage, and guideline files.
 
 ## Color system
@@ -225,6 +227,12 @@ Never close the bands into rings, mechanically mirror all exposed terminals, add
 - Motion, when present, should show delegation inward and reconciliation outward. Avoid pulsing, orbiting, or continuous scanning.
 - The dark surface is Deep Ink with Warm Off-White type. Reserved Green remains a small active-state accent.
 - No gradient, blur bloom, glassmorphism, or metallic rendering.
+
+### X profile
+
+- Use a `1500 × 500` header.
+- Keep essential content between `y=60–440` and to the right of `x=520`, leaving the lower-left area empty for the profile photo.
+- Do not repeat the symbol or wordmark in the header. The PFP and profile display name already carry the identity; the header carries positioning and proof.
 
 ## Review checklist
 

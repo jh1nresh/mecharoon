@@ -21,6 +21,8 @@ only when the product name is already visible.
 - `banners/mecharoon-banner-1600x600.*` — wide brand banner.
 - `banners/mecharoon-social-1200x630.*` — social and Open Graph banner.
 - `social/mecharoon-x-pfp-400.png` — upload-ready X profile image with circular-crop safe space.
+- `social/mecharoon-x-banner-1500x500.*` — text-only X header with a blank profile-photo safety zone.
+- `social/mecharoon-x-profile-preview.png` — desktop placement preview with the PFP overlap.
 - `symbols/` — standalone SVG, PNG, and favicon variants.
 - `guidelines/mecharoon-brand-guide.md` — full construction and usage guide.
 

@@ -152,6 +152,24 @@ function bannerSvg({width, height, social = false}, lockup, symbol) {
 </svg>`;
 }
 
+function xBannerSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-labelledby="title desc">
+  <title id="title">Mecharoon X profile banner</title>
+  <desc id="desc">A text-only Mecharoon banner with an empty left profile-photo safety zone.</desc>
+  <rect width="1500" height="500" fill="${palette.paper}"/>
+  <rect x="520" y="96" width="64" height="6" fill="${palette.reserve}"/>
+  <text x="520" y="139" fill="${palette.reserve}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="3">AGENT SPEND CONTROL PLANE</text>
+  <line x1="520" y1="166" x2="1420" y2="166" stroke="${palette.line}" stroke-width="2"/>
+  <text x="520" y="253" fill="${palette.ink}" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="700" letter-spacing="-2.5">
+    <tspan x="520" dy="0">Financial control for</tspan>
+    <tspan x="520" dy="78">autonomous teams.</tspan>
+  </text>
+  <text x="520" y="409" fill="${palette.inkSoft ?? '#344850'}" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Delegate authority · Reserve atomically · Reconcile every payment
+  </text>
+</svg>`;
+}
+
 async function render(svgPath, outputPath, width, height) {
   await sharp(svgPath)
     .resize(width, height, {fit: 'fill'})
@@ -293,8 +311,11 @@ await writeFile(
 
 const bannerWidePath = join(bannerDir, 'mecharoon-banner-1600x600.svg');
 const bannerSocialPath = join(bannerDir, 'mecharoon-social-1200x630.svg');
+const xBannerSvgPath = join(socialDir, 'mecharoon-x-banner-1500x500.svg');
+const xBannerPngPath = join(socialDir, 'mecharoon-x-banner-1500x500.png');
 await writeFile(bannerWidePath, bannerSvg({width: 1600, height: 600}, lockup, symbol));
 await writeFile(bannerSocialPath, bannerSvg({width: 1200, height: 630, social: true}, lockup, symbol));
+await writeFile(xBannerSvgPath, xBannerSvg());
 
 const renderJobs = [
   [primaryLogoPath, join(pngDir, 'mecharoon-logo-primary.png'), 2272, 640],
@@ -322,6 +343,7 @@ const renderJobs = [
   [join(brandDir, 'mecharoon-symbol-micro-color.svg'), join(pngDir, 'mecharoon-favicon-64.png'), 64, 64],
   [bannerWidePath, join(bannerDir, 'mecharoon-banner-1600x600.png'), 1600, 600],
   [bannerSocialPath, join(bannerDir, 'mecharoon-social-1200x630.png'), 1200, 630],
+  [xBannerSvgPath, xBannerPngPath, 1500, 500],
 ];
 
 for (const [input, output, width, height] of renderJobs) {
@@ -354,6 +376,35 @@ await sharp({
   .composite([{input: pfpSymbol, left: 50, top: 50}])
   .png({compressionLevel: 9})
   .toFile(xPfpPath);
+
+const xBannerPreviewPath = join(socialDir, 'mecharoon-x-profile-preview.png');
+const xBannerPreview = await sharp(xBannerPngPath).resize(600, 200).png().toBuffer();
+const pfpMask = Buffer.from(
+  '<svg width="134" height="134" xmlns="http://www.w3.org/2000/svg"><circle cx="67" cy="67" r="67" fill="white"/></svg>',
+);
+const pfpPreview = await sharp(xPfpPath)
+  .resize(134, 134)
+  .composite([{input: pfpMask, blend: 'dest-in'}])
+  .png()
+  .toBuffer();
+const pfpRing = Buffer.from(
+  `<svg width="142" height="142" xmlns="http://www.w3.org/2000/svg"><circle cx="71" cy="71" r="71" fill="${palette.ink}"/></svg>`,
+);
+await sharp({
+  create: {
+    width: 600,
+    height: 275,
+    channels: 4,
+    background: '#000000',
+  },
+})
+  .composite([
+    {input: xBannerPreview, left: 0, top: 0},
+    {input: pfpRing, left: 16, top: 126},
+    {input: pfpPreview, left: 20, top: 130},
+  ])
+  .png({compressionLevel: 9})
+  .toFile(xBannerPreviewPath);
 
 await rm(packageRoot, {recursive: true, force: true});
 for (const folder of ['logos', 'symbols', 'banners', 'social', 'guidelines']) {
@@ -393,6 +444,9 @@ const copies = [
   [bannerSocialPath, 'banners/mecharoon-social-1200x630.svg'],
   [join(bannerDir, 'mecharoon-social-1200x630.png'), 'banners/mecharoon-social-1200x630.png'],
   [xPfpPath, 'social/mecharoon-x-pfp-400.png'],
+  [xBannerSvgPath, 'social/mecharoon-x-banner-1500x500.svg'],
+  [xBannerPngPath, 'social/mecharoon-x-banner-1500x500.png'],
+  [xBannerPreviewPath, 'social/mecharoon-x-profile-preview.png'],
   [join(root, 'brand.md'), 'guidelines/mecharoon-brand-guide.md'],
   [join(brandDir, 'README.md'), 'README.md'],
 ];
