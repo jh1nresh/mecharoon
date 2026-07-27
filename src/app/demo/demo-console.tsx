@@ -5,54 +5,11 @@ import Link from 'next/link';
 import {useState} from 'react';
 
 import styles from './demo.module.css';
-
-type TimelineItem = {
-  step: number;
-  code: string;
-  status: string;
-  detail: string;
-};
-
-type Exposure = {
-  limit_minor: string;
-  reserved_minor: string;
-  settled_minor: string;
-  available_minor: string;
-};
-
-type DemoResult = {
-  run_id: string;
-  mode: string;
-  settlement_adapter: string;
-  real_funds: boolean;
-  timeline: TimelineItem[];
-  authority: {
-    root: {limit_minor: string; final_exposure: Exposure};
-    child: {
-      limit_minor: string;
-      exposure_while_unknown: Exposure;
-      final_exposure: Exposure;
-    };
-  };
-  receipt: {
-    receipt_id: string;
-    receipt_hash: string;
-    receipt: {
-      work_order: {task_ref: string; amount_minor: string};
-      verdict: {outcome: string; revision_count: number};
-      settlement: {tx_hash: string; finality: string};
-    };
-  };
-  reputation: {
-    before: {max_job_amount_minor: string; route_code: string};
-    after: {
-      max_job_amount_minor: string;
-      route_code: string;
-      sample_size: number;
-    };
-  };
-  proofs: Record<string, boolean | string | null>;
-};
+import {
+  HOSTED_WALKTHROUGH_RESULT,
+  HOSTED_WALKTHROUGH_STEPS,
+  type DemoResult,
+} from './walkthrough';
 
 type ErrorEnvelope = {
   reason_code?: string;
@@ -64,7 +21,7 @@ function dollars(minor: string): string {
 }
 
 function shortHash(value: string | null | undefined): string {
-  if (!value) return '—';
+  if (!value) return 'Not available';
   return `${value.slice(0, 12)}…${value.slice(-8)}`;
 }
 
@@ -73,6 +30,18 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
   const [state, setState] = useState<'idle' | 'running' | 'error'>('idle');
   const [error, setError] = useState('');
   const [demoToken, setDemoToken] = useState('');
+  const [walkthroughStep, setWalkthroughStep] = useState(0);
+
+  const isHostedWalkthrough = !enabled;
+  const activeWalkthroughStep =
+    walkthroughStep > 0
+      ? HOSTED_WALKTHROUGH_STEPS[walkthroughStep - 1]
+      : null;
+  const displayResult =
+    isHostedWalkthrough &&
+    walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
+      ? HOSTED_WALKTHROUGH_RESULT
+      : result;
 
   async function runDemo() {
     setState('running');
@@ -130,29 +99,48 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
       <section className={styles.hero}>
         <div>
           <span className={styles.eyebrow}>
-            LOCAL SANDBOX · POSTGRESQL SOURCE OF TRUTH
+            {isHostedWalkthrough
+              ? 'HOSTED WALKTHROUGH · ILLUSTRATIVE DATA'
+              : 'LOCAL SANDBOX · POSTGRESQL SOURCE OF TRUTH'}
           </span>
-          <h1>One verified job. Every financial control state visible.</h1>
+          <h1>Trace one verified job to settlement.</h1>
           <p>
-            Run the complete Mecharoon wedge: delegated authority, atomic
-            reservation, failed evidence, settlement uncertainty,
-            reconciliation, FinalReceipt, and a higher next-job limit.
+            {isHostedWalkthrough
+              ? 'Step through the Mecharoon control loop without connecting a database, wallet, or payment rail.'
+              : 'Run the complete Mecharoon wedge: delegated authority, atomic reservation, failed evidence, settlement uncertainty, reconciliation, FinalReceipt, and a higher next-job limit.'}
           </p>
           <div className={styles.badges} aria-label="Demo boundaries">
             <span>OFFCHAIN CONTROL</span>
-            <span>SIMULATED ONCHAIN</span>
+            <span>
+              {isHostedWalkthrough ? 'NO PRODUCTION API' : 'SIMULATED ONCHAIN'}
+            </span>
             <span>NO REAL FUNDS</span>
           </div>
         </div>
 
         <div className={styles.runPanel}>
-          <span className={styles.panelLabel}>DETERMINISTIC GOLDEN LOOP</span>
+          <span className={styles.panelLabel}>
+            {isHostedWalkthrough
+              ? 'EIGHT-STATE PRODUCT WALKTHROUGH'
+              : 'DETERMINISTIC GOLDEN LOOP'}
+          </span>
           <strong>$20 → $15 → $5 → receipt → $10 cap</strong>
           <p>
-            Each authorized run creates an isolated authority tree and reads
-            the result back from the database.
+            {isHostedWalkthrough
+              ? 'A fixed client-side replay of the deterministic flow verified by the local PostgreSQL test suite. No production API, database, blockchain, wallet, or real funds are used.'
+              : 'Each authorized run creates an isolated authority tree and reads the result back from the database.'}
           </p>
-          {enabled ? (
+          {isHostedWalkthrough ? (
+            <button
+              className={styles.runButton}
+              type="button"
+              onClick={() => setWalkthroughStep(1)}
+            >
+              {walkthroughStep === 0
+                ? 'Start the walkthrough'
+                : 'Restart from delegation'}
+            </button>
+          ) : enabled ? (
             <>
               <label className={styles.tokenField}>
                 <span>LOCAL DEMO TOKEN</span>
@@ -179,16 +167,13 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
                     : 'Run verified settlement'}
               </button>
             </>
-          ) : (
-            <div className={styles.disabled}>
-              <strong>Local demo mode is off.</strong>
-              <code>MECHAROON_DEMO_MODE=true npm run dev</code>
-            </div>
+          ) : null}
+          {!isHostedWalkthrough && (
+            <span className={styles.boundary} id="demo-token-boundary">
+              Kept in memory for this tab only. The route is unavailable in
+              production.
+            </span>
           )}
-          <span className={styles.boundary} id="demo-token-boundary">
-            Kept in memory for this tab only. The route is unavailable in
-            production.
-          </span>
         </div>
       </section>
 
@@ -218,40 +203,132 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
         )}
       </div>
 
-      {result && (
+      {isHostedWalkthrough && activeWalkthroughStep && (
+        <section className={styles.walkthrough} aria-live="polite">
+          <div className={styles.walkthroughHeader}>
+            <div>
+              <span className={styles.eyebrow}>
+                STEP {String(activeWalkthroughStep.step).padStart(2, '0')} OF{' '}
+                {HOSTED_WALKTHROUGH_STEPS.length}
+              </span>
+              <h2>{activeWalkthroughStep.code.replaceAll('_', ' ')}</h2>
+            </div>
+            <span className={styles.complete}>
+              {activeWalkthroughStep.status.toUpperCase()}
+            </span>
+          </div>
+
+          <p className={styles.walkthroughDetail}>
+            {activeWalkthroughStep.detail}
+          </p>
+
+          <div className={styles.snapshot} aria-label="Illustrative ledger state">
+            {[
+              ['AUTHORITY', activeWalkthroughStep.authority],
+              ['RESERVED', activeWalkthroughStep.reserved],
+              ['SETTLEMENT', activeWalkthroughStep.settlement],
+              ['NEXT LIMIT', activeWalkthroughStep.next_limit],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <ol className={styles.stepRail} aria-label="Walkthrough steps">
+            {HOSTED_WALKTHROUGH_STEPS.map((step) => (
+              <li key={step.step}>
+                <button
+                  type="button"
+                  className={
+                    step.step === walkthroughStep ? styles.stepActive : undefined
+                  }
+                  onClick={() => setWalkthroughStep(step.step)}
+                  aria-current={
+                    step.step === walkthroughStep ? 'step' : undefined
+                  }
+                  aria-label={`Step ${step.step}: ${step.code.replaceAll('_', ' ')}`}
+                >
+                  <span>{String(step.step).padStart(2, '0')}</span>
+                  <b>{step.code.replaceAll('_', ' ')}</b>
+                </button>
+              </li>
+            ))}
+          </ol>
+
+          <div className={styles.walkthroughActions}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() =>
+                setWalkthroughStep((current) => Math.max(1, current - 1))
+              }
+              disabled={walkthroughStep === 1}
+            >
+              Previous state
+            </button>
+            <button
+              type="button"
+              className={styles.runButton}
+              onClick={() =>
+                setWalkthroughStep((current) =>
+                  current === HOSTED_WALKTHROUGH_STEPS.length
+                    ? 1
+                    : current + 1,
+                )
+              }
+            >
+              {walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
+                ? 'Replay walkthrough'
+                : `Next: ${HOSTED_WALKTHROUGH_STEPS[walkthroughStep]?.code.replaceAll('_', ' ')}`}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {displayResult && (
         <section className={styles.result}>
           <header className={styles.resultHeader}>
             <div>
-              <span className={styles.eyebrow}>RUN {result.run_id}</span>
-              <h2>Verified settlement completed.</h2>
+              <span className={styles.eyebrow}>
+                {isHostedWalkthrough ? 'ILLUSTRATIVE RECEIPT' : `RUN ${result?.run_id}`}
+              </span>
+              <h2>
+                {isHostedWalkthrough
+                  ? 'An illustrative FinalReceipt closes the loop.'
+                  : 'Verified settlement completed.'}
+              </h2>
             </div>
-            <span className={styles.complete}>SIMULATED CONFIRMED</span>
+            <span className={styles.complete}>
+              {isHostedWalkthrough ? 'SAMPLE · NOT SIGNED' : 'SIMULATED CONFIRMED'}
+            </span>
           </header>
 
           <div className={styles.metrics}>
             <article>
               <span>ROOT AUTHORITY</span>
-              <strong>{dollars(result.authority.root.limit_minor)}</strong>
+              <strong>{dollars(displayResult.authority.root.limit_minor)}</strong>
               <small>shared ceiling</small>
             </article>
             <article>
               <span>CHILD GRANT</span>
-              <strong>{dollars(result.authority.child.limit_minor)}</strong>
+              <strong>{dollars(displayResult.authority.child.limit_minor)}</strong>
               <small>attenuated authority</small>
             </article>
             <article>
               <span>SETTLED WORK</span>
               <strong>
-                {dollars(result.receipt.receipt.work_order.amount_minor)}
+                {dollars(displayResult.receipt.receipt.work_order.amount_minor)}
               </strong>
               <small>after PASS + reconciliation</small>
             </article>
             <article>
               <span>NEXT JOB CAP</span>
               <strong>
-                {dollars(result.reputation.after.max_job_amount_minor)}
+                {dollars(displayResult.reputation.after.max_job_amount_minor)}
               </strong>
-              <small>{result.reputation.after.route_code}</small>
+              <small>{displayResult.reputation.after.route_code}</small>
             </article>
           </div>
 
@@ -259,10 +336,10 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
             <div className={styles.timeline}>
               <div className={styles.sectionTitle}>
                 <span>CONTROL TRACE</span>
-                <b>{result.timeline.length} STATES</b>
+                <b>{displayResult.timeline.length} STATES</b>
               </div>
               <ol>
-                {result.timeline.map((item) => (
+                {displayResult.timeline.map((item) => (
                   <li key={item.step}>
                     <span>{String(item.step).padStart(2, '0')}</span>
                     <div>
@@ -294,28 +371,32 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
               <dl>
                 <div>
                   <dt>Task</dt>
-                  <dd>{result.receipt.receipt.work_order.task_ref}</dd>
+                  <dd>{displayResult.receipt.receipt.work_order.task_ref}</dd>
                 </div>
                 <div>
                   <dt>Verdict</dt>
                   <dd>
-                    {result.receipt.receipt.verdict.outcome.toUpperCase()} ·{' '}
-                    {result.receipt.receipt.verdict.revision_count} revision
+                    {displayResult.receipt.receipt.verdict.outcome.toUpperCase()} ·{' '}
+                    {displayResult.receipt.receipt.verdict.revision_count} revision
                   </dd>
                 </div>
                 <div>
-                  <dt>Receipt hash</dt>
-                  <dd>{shortHash(result.receipt.receipt_hash)}</dd>
+                  <dt>
+                    {isHostedWalkthrough ? 'Sample receipt' : 'Receipt hash'}
+                  </dt>
+                  <dd>{shortHash(displayResult.receipt.receipt_hash)}</dd>
                 </div>
                 <div>
-                  <dt>Simulated tx</dt>
+                  <dt>
+                    {isHostedWalkthrough ? 'Sample transaction' : 'Simulated tx'}
+                  </dt>
                   <dd>
-                    {shortHash(result.receipt.receipt.settlement.tx_hash)}
+                    {shortHash(displayResult.receipt.receipt.settlement.tx_hash)}
                   </dd>
                 </div>
                 <div>
                   <dt>Finality</dt>
-                  <dd>{result.receipt.receipt.settlement.finality}</dd>
+                  <dd>{displayResult.receipt.receipt.settlement.finality}</dd>
                 </div>
               </dl>
               <p>
@@ -330,7 +411,8 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
               <span className={styles.panelLabel}>QUARANTINE EVIDENCE</span>
               <strong>
                 {dollars(
-                  result.authority.child.exposure_while_unknown.reserved_minor,
+                  displayResult.authority.child.exposure_while_unknown
+                    .reserved_minor,
                 )}{' '}
                 stayed reserved while settlement was unknown.
               </strong>
@@ -340,7 +422,7 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
               </p>
             </div>
             <ul>
-              {Object.entries(result.proofs)
+              {Object.entries(displayResult.proofs)
                 .filter(([, value]) => typeof value === 'boolean')
                 .map(([key, value]) => (
                   <li key={key}>
@@ -352,15 +434,27 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
           </div>
 
           <details className={styles.raw}>
-            <summary>Inspect raw API result</summary>
-            <pre>{JSON.stringify(result, null, 2)}</pre>
+            <summary>
+              {isHostedWalkthrough
+                ? 'Inspect illustrative result'
+                : 'Inspect raw API result'}
+            </summary>
+            <pre>{JSON.stringify(displayResult, null, 2)}</pre>
           </details>
         </section>
       )}
 
       <footer className={styles.footer}>
-        <span>Mecharoon verified settlement sandbox v0</span>
-        <span>Offchain control · simulated onchain finality</span>
+        <span>
+          Mecharoon verified settlement{' '}
+          {isHostedWalkthrough ? 'walkthrough' : 'sandbox'}
+        </span>
+        <span>
+          Offchain control ·{' '}
+          {isHostedWalkthrough
+            ? 'illustrative settlement only'
+            : 'simulated onchain finality'}
+        </span>
       </footer>
     </main>
   );
