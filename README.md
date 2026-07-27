@@ -168,9 +168,11 @@ receipt without creating another economic effect.
 
 Before enabling it:
 
-1. Provision a dedicated managed PostgreSQL database and require TLS.
-2. Set `MECHAROON_DATABASE_URL` and run `npm run db:migrate` against that
-   database.
+1. Provision a dedicated managed PostgreSQL database and require TLS with
+   certificate verification.
+2. Set `MECHAROON_DATABASE_URL` without SSL query parameters, set the
+   provider CA PEM in `MECHAROON_DATABASE_CA_CERT`, and run
+   `npm run db:migrate` against that database.
 3. Set `MECHAROON_HOSTED_SANDBOX_MODE=true`, one lowercase
    `MECHAROON_SANDBOX_PARTNER_ID`, and a distinct random
    `MECHAROON_SANDBOX_TOKEN` of at least 32 characters.
