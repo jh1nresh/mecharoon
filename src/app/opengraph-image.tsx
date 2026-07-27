@@ -1,6 +1,6 @@
 import {ImageResponse} from 'next/og';
 
-export const alt = 'Mecharoon verified settlement for agentic work';
+export const alt = 'Mecharoon: verify agent work, then pay';
 export const size = {
   width: 1200,
   height: 630,
@@ -158,7 +158,7 @@ export default function OpenGraphImage() {
                   lineHeight: 0.98,
                 }}
               >
-                The financial control infrastructure for agentic work.
+                Verify agent work. Then pay.
               </span>
               <span
                 style={{
@@ -168,7 +168,7 @@ export default function OpenGraphImage() {
                   lineHeight: 1.45,
                 }}
               >
-                Verify work offchain. Settle approved value onchain. Return one accountable receipt.
+                Verify work offchain. Authorize approved value for settlement. Let finalized receipts set future limits. MVP settlement is simulated.
               </span>
             </div>
 

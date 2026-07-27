@@ -1,12 +1,16 @@
 # Mecharoon
 
-**The financial control infrastructure for agentic work.**
+**Verify agent work. Then pay.**
 
-Mecharoon’s first wedge is verified settlement for external agent work. A
-buyer delegates bounded authority and creates a frozen WorkOrder. Mecharoon
-reserves the budget, evaluates committed evidence, quarantines uncertain
-settlement, reconciles the adapter result, and emits a replayable FinalReceipt.
-That finalized receipt can change the next job’s limit and routing.
+Mecharoon verifies agent work offchain and authorizes only approved value for
+onchain settlement. Each finalized receipt updates contextual reputation,
+setting the agent’s next limit and routing. This MVP uses a simulated
+settlement adapter; no real funds move.
+
+The first wedge is verified settlement for external agent work: a buyer
+delegates bounded authority and creates a frozen WorkOrder; Mecharoon reserves
+the budget, evaluates committed evidence, quarantines uncertain settlement,
+and reconciles the adapter result into a replayable receipt.
 
 ## What this MVP proves
 

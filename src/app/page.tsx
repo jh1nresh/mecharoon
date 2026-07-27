@@ -362,13 +362,15 @@ export default function Home() {
           <div className="hero-copy hero-enter">
             <span className="hero-kicker">VERIFIED SETTLEMENT FOR AGENT WORK</span>
             <h1>
-              The financial control
+              Verify agent work.
               <br />
-              {" "}infrastructure for agentic work.
+              {' '}Then pay.
             </h1>
             <p className="hero-subcopy">
-              Bound agent authority offchain. Verify external work. Settle approved value onchain. Return a receipt
-              agents can use for the next decision.
+              Mecharoon verifies agent work offchain and authorizes only
+              approved value for onchain settlement. Finalized receipts set
+              future limits and routing. This MVP uses a simulated adapter; no
+              real funds move.
             </p>
             <div className="hero-actions">
               <a className="button button-accent" href="/demo">
