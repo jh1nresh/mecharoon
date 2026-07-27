@@ -39,6 +39,34 @@ test('golden demo proves quarantine, receipt finality, and a higher next-job cap
   assert.equal(result.reputation.after.max_job_amount_minor, '1000');
   assert.equal(result.work.second.status, 'authorized');
   assert.equal(result.work.second.resource?.amount_minor, '800');
+  assert.deepEqual(result.authority.root.exposure_after_first_settlement, {
+    authority_grant_id: result.authority.root.id,
+    limit_minor: '2000',
+    reserved_minor: '0',
+    settled_minor: '500',
+    available_minor: '1500',
+  });
+  assert.deepEqual(result.authority.child.exposure_after_first_settlement, {
+    authority_grant_id: result.authority.child.id,
+    limit_minor: '1500',
+    reserved_minor: '0',
+    settled_minor: '500',
+    available_minor: '1000',
+  });
+  assert.deepEqual(result.authority.root.final_exposure, {
+    authority_grant_id: result.authority.root.id,
+    limit_minor: '2000',
+    reserved_minor: '800',
+    settled_minor: '500',
+    available_minor: '700',
+  });
+  assert.deepEqual(result.authority.child.final_exposure, {
+    authority_grant_id: result.authority.child.id,
+    limit_minor: '1500',
+    reserved_minor: '800',
+    settled_minor: '500',
+    available_minor: '200',
+  });
 });
 
 test('each golden demo run creates an isolated authority tree', async () => {

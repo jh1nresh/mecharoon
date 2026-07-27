@@ -52,6 +52,7 @@ function credentials() {
     evaluatorToken: process.env.MECHAROON_EVALUATOR_TOKEN ?? '',
     operatorToken: process.env.MECHAROON_OPERATOR_TOKEN ?? '',
     demoToken: process.env.MECHAROON_DEMO_TOKEN ?? '',
+    sandboxToken: process.env.MECHAROON_SANDBOX_TOKEN ?? '',
   };
 }
 
@@ -62,12 +63,13 @@ function assertDistinctRoleTokens(configured: ReturnType<typeof credentials>) {
     configured.evaluatorToken,
     configured.operatorToken,
     configured.demoToken,
+    configured.sandboxToken,
   ].filter(Boolean);
   if (new Set(tokens).size !== tokens.length) {
     throw new DomainError(
       503,
       'AUTH_CONFIGURATION_INVALID',
-      'Each API role and the demo runner must use a distinct bearer token.',
+      'Each API role, demo runner, and hosted sandbox must use a distinct bearer token.',
     );
   }
 }
@@ -77,6 +79,10 @@ export function isLocalDemoEnabled(): boolean {
     process.env.MECHAROON_DEMO_MODE === 'true' &&
     process.env.NODE_ENV !== 'production'
   );
+}
+
+export function isHostedSandboxEnabled(): boolean {
+  return process.env.MECHAROON_HOSTED_SANDBOX_MODE === 'true';
 }
 
 export function authorize(
@@ -168,6 +174,39 @@ export function authorizeDemo(request: Request): void {
       'A valid local demo bearer token is required.',
     );
   }
+}
+
+export function authorizeHostedSandbox(request: Request): {
+  partnerId: string;
+} {
+  const configured = credentials();
+  assertDistinctRoleTokens(configured);
+  const partnerId = process.env.MECHAROON_SANDBOX_PARTNER_ID ?? '';
+  const configuredToken = configured.sandboxToken;
+  const authorization = request.headers.get('authorization');
+  const token = authorization?.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length)
+    : '';
+
+  if (
+    !/^[a-z0-9_]{1,32}$/.test(partnerId) ||
+    configuredToken.length < 32
+  ) {
+    throw new DomainError(
+      503,
+      'SANDBOX_AUTH_NOT_CONFIGURED',
+      'Configure a valid partner ID and a hosted sandbox token of at least 32 characters.',
+    );
+  }
+  if (!token || !safeTokenEqual(token, configuredToken)) {
+    throw new DomainError(
+      401,
+      'SANDBOX_AUTHENTICATION_REQUIRED',
+      'A valid invite-only hosted sandbox bearer token is required.',
+    );
+  }
+
+  return {partnerId};
 }
 
 export function requireIdempotencyKey(request: Request): string {

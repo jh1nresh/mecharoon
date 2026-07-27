@@ -7,13 +7,17 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Verified settlement walkthrough',
   description:
-    'Step through Mecharoon’s verified settlement control loop with illustrative data and no real funds.',
+    'Run or step through Mecharoon’s fixed settlement-control workflow with simulated settlement and no real funds.',
 };
 
 export default function DemoPage() {
-  const enabled =
-    process.env.MECHAROON_DEMO_MODE === 'true' &&
-    process.env.NODE_ENV !== 'production';
+  const mode =
+    process.env.MECHAROON_HOSTED_SANDBOX_MODE === 'true'
+      ? 'hosted'
+      : process.env.MECHAROON_DEMO_MODE === 'true' &&
+          process.env.NODE_ENV !== 'production'
+        ? 'local'
+        : 'walkthrough';
 
-  return <DemoConsole enabled={enabled} />;
+  return <DemoConsole mode={mode} />;
 }

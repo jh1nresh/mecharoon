@@ -27,6 +27,7 @@ export async function resetOwnedTables(pool: Pool): Promise<void> {
   await assertTestDatabase(pool);
   await pool.query(`
     TRUNCATE TABLE
+      mecharoon.sandbox_runs,
       mecharoon.idempotency_records,
       mecharoon.reputation_events,
       mecharoon.final_receipts,

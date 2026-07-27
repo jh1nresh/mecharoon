@@ -14,13 +14,17 @@ and reconciles the adapter result into a replayable receipt.
 
 ## What this MVP proves
 
-This repository contains two deliberately separate proof surfaces:
+This repository contains three deliberately separate proof surfaces:
 
 - The public [hosted walkthrough](https://mecharoon.vercel.app/demo) steps
   through fixed illustrative data in the browser. It makes no API calls, uses
   no database or wallet, and moves no funds.
 - The local sandbox runs the same golden loop against PostgreSQL and reads the
   result back from the database.
+- The optional invite-only hosted sandbox runs that fixed loop through one
+  token-gated API against managed PostgreSQL. It has database-backed
+  idempotency, a rolling run limit, and an audit row, but still uses simulated
+  settlement and moves no funds.
 
 The deterministic golden loop is:
 
@@ -53,13 +57,17 @@ Implemented:
   reputation events, and domain events.
 - Separate buyer, seller, evaluator, and settlement-operator API identities.
 - A `/demo` page that is an explicitly illustrative walkthrough in production
-  and becomes the PostgreSQL-backed runner only in authorized local demo mode.
+  by default, becomes the PostgreSQL-backed runner in authorized local demo
+  mode, and can use the invite-only hosted endpoint when explicitly enabled.
+- One fixed `POST /api/v0/sandbox/runs` workflow for a single design partner,
+  with a distinct bearer key, top-level idempotency, quota, and run audit state.
 
 Not implemented:
 
 - A blockchain RPC, smart contract, wallet, signer, or real USDC transfer.
-- Production authentication, tenant isolation, custody, issuing, or compliance
-  controls.
+- General production authentication, tenant isolation, custody, issuing, or
+  compliance controls. The hosted sandbox is one manually configured partner,
+  not a self-serve or multi-tenant product.
 - Multiple rails, chains, currencies, evaluator marketplaces, or portable
   global reputation.
 
@@ -140,6 +148,41 @@ You can also run the flow from the terminal:
 npm run demo:run
 ```
 
+## Invite-only hosted sandbox
+
+The hosted path is deliberately narrower than the role APIs. The caller cannot
+choose an amount, participant, evidence result, or settlement scenario. One
+authorized request always runs the fixed golden workflow and returns its real
+PostgreSQL-backed result:
+
+```bash
+curl -sS https://your-sandbox.example/api/v0/sandbox/runs \
+  -X POST \
+  -H "Authorization: Bearer $MECHAROON_SANDBOX_TOKEN" \
+  -H "Idempotency-Key: demo-recording-001"
+```
+
+The success response uses the regular service envelope, with the demo result
+under `resource`. Reusing the same idempotency key returns the same run and
+receipt without creating another economic effect.
+
+Before enabling it:
+
+1. Provision a dedicated managed PostgreSQL database and require TLS.
+2. Set `MECHAROON_DATABASE_URL` and run `npm run db:migrate` against that
+   database.
+3. Set `MECHAROON_HOSTED_SANDBOX_MODE=true`, one lowercase
+   `MECHAROON_SANDBOX_PARTNER_ID`, and a distinct random
+   `MECHAROON_SANDBOX_TOKEN` of at least 32 characters.
+4. Optionally set `MECHAROON_SANDBOX_DAILY_RUN_LIMIT` from 1 to 100; the
+   default is 20 runs per rolling 24 hours.
+5. Leave the buyer, seller, evaluator, operator, and local demo tokens unset in
+   the hosted deployment. The fixed workflow does not expose or require them.
+
+The invite key is entered into `/demo` and retained only in that browser tab's
+component memory. There is no CORS opt-in, wallet, blockchain RPC, or real
+asset movement.
+
 ## API v0
 
 All mutation endpoints require `Idempotency-Key`. Tokens are scoped by role:
@@ -154,6 +197,7 @@ All mutation endpoints require `Idempotency-Key`. Tokens are scoped by role:
 | `GET /api/v0/work-orders/:id/receipt` | buyer, seller, operator | Read the FinalReceipt |
 | `GET /api/v0/authorities/:id/exposure` | scoped participant, operator | Read reserved and settled exposure |
 | `GET /api/v0/reputation/:subjectId` | scoped participant, operator | Derive contextual reputation |
+| `POST /api/v0/sandbox/runs` | invite-only partner | Run the fixed PostgreSQL-backed recording workflow |
 
 The seller token cannot self-approve work. In v0, a separate evaluator identity
 receives the artifact through the surrounding workflow, commits its reference
@@ -200,18 +244,23 @@ The suite covers:
 - mismatched settlement remaining reserved for manual review;
 - 50 concurrent unique reservation attempts without ancestor overspend;
 - 50 concurrent identical idempotency keys producing one economic effect;
+- hosted sandbox authentication, replay, rolling quota, hashed request keys,
+  and final database exposure;
 - append-only mutation rejection and receipt privacy.
 
 ## Deployment gate
 
-Only the fixed, client-side walkthrough is production-safe in the current
-scope. Do not deploy this as a money-moving service. A later hosted sandbox
-needs production authentication, a managed PostgreSQL database, migrations,
-rotated scoped credentials, rate limits, and tenant isolation; the local demo
-runner must remain disabled in production. A real-money pilot additionally
-needs a customer-controlled connector, provider fetch-back, webhook
-verification, hard aggregate caps, incident controls, legal review, and an
-independent security review.
+The fixed walkthrough remains the default production surface. The code also
+contains a single-partner hosted sandbox suitable for an invite-only demo after
+a managed database, migration, and deployment secret are configured. This
+repository change does not provision that database, set a secret, enable the
+mode, merge, or deploy it.
+
+Do not present the hosted sandbox as a money-moving service or a multi-tenant
+production API. The local demo runner must remain disabled in production. A
+real-money pilot additionally needs tenant isolation, customer-controlled
+connectors, provider fetch-back, webhook verification, hard aggregate caps,
+incident controls, legal review, and an independent security review.
 
 ## Brand assets
 

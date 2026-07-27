@@ -19,10 +19,15 @@ export type DemoResult = {
   real_funds: boolean;
   timeline: TimelineItem[];
   authority: {
-    root: {limit_minor: string; final_exposure: Exposure};
+    root: {
+      limit_minor: string;
+      exposure_after_first_settlement: Exposure;
+      final_exposure: Exposure;
+    };
     child: {
       limit_minor: string;
       exposure_while_unknown: Exposure;
+      exposure_after_first_settlement: Exposure;
       final_exposure: Exposure;
     };
   };
@@ -136,7 +141,7 @@ export const HOSTED_WALKTHROUGH_STEPS: WalkthroughStep[] = [
     detail:
       'The finalized receipt raises the contextual cap to $10, so the next $8 job is authorized.',
     authority: '$20 root · $15 child',
-    reserved: '$0',
+    reserved: '$8',
     settlement: '$5 simulated confirmed',
     next_limit: '$10 · $8 authorized',
   },
@@ -153,11 +158,17 @@ export const HOSTED_WALKTHROUGH_RESULT: DemoResult = {
   authority: {
     root: {
       limit_minor: '2000',
-      final_exposure: {
+      exposure_after_first_settlement: {
         limit_minor: '2000',
         reserved_minor: '0',
         settled_minor: '500',
         available_minor: '1500',
+      },
+      final_exposure: {
+        limit_minor: '2000',
+        reserved_minor: '800',
+        settled_minor: '500',
+        available_minor: '700',
       },
     },
     child: {
@@ -168,11 +179,17 @@ export const HOSTED_WALKTHROUGH_RESULT: DemoResult = {
         settled_minor: '0',
         available_minor: '1000',
       },
-      final_exposure: {
+      exposure_after_first_settlement: {
         limit_minor: '1500',
         reserved_minor: '0',
         settled_minor: '500',
         available_minor: '1000',
+      },
+      final_exposure: {
+        limit_minor: '1500',
+        reserved_minor: '800',
+        settled_minor: '500',
+        available_minor: '200',
       },
     },
   },
