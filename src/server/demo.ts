@@ -41,11 +41,14 @@ async function assertDemoDatabase(pool: Pool): Promise<void> {
   }
 }
 
-export async function runGoldenDemo(
+async function executeGoldenScenario(
   pool: Pool,
-  options: {runtime?: Runtime; namespace?: string} = {},
+  options: {
+    runtime?: Runtime;
+    namespace?: string;
+    mode: 'local_sandbox' | 'hosted_sandbox';
+  },
 ) {
-  await assertDemoDatabase(pool);
   const runtime = options.runtime ?? systemRuntime;
   const namespace =
     options.namespace ??
@@ -149,10 +152,10 @@ export async function runGoldenDemo(
     subjectId: seed.sellerId,
     evaluatorPolicyHash: policyHash,
   });
-  const rootExposureAfter = await queries.getAuthorityExposure(
+  const rootExposureAfterFirstSettlement = await queries.getAuthorityExposure(
     seed.rootAuthorityId,
   );
-  const childExposureAfter = await queries.getAuthorityExposure(
+  const childExposureAfterFirstSettlement = await queries.getAuthorityExposure(
     seed.childAuthorityId,
   );
 
@@ -165,10 +168,16 @@ export async function runGoldenDemo(
     required_checks: ['lint', 'unit'],
     idempotency_key: `${namespace}-second-work`,
   });
+  const rootFinalExposure = await queries.getAuthorityExposure(
+    seed.rootAuthorityId,
+  );
+  const childFinalExposure = await queries.getAuthorityExposure(
+    seed.childAuthorityId,
+  );
 
   return {
     run_id: namespace,
-    mode: 'local_sandbox',
+    mode: options.mode,
     settlement_adapter: 'simulated_onchain_v0',
     real_funds: false,
     timeline: [
@@ -225,13 +234,15 @@ export async function runGoldenDemo(
       root: {
         id: seed.rootAuthorityId,
         limit_minor: seed.rootLimitMinor,
-        final_exposure: rootExposureAfter,
+        exposure_after_first_settlement: rootExposureAfterFirstSettlement,
+        final_exposure: rootFinalExposure,
       },
       child: {
         id: seed.childAuthorityId,
         limit_minor: seed.childLimitMinor,
         exposure_while_unknown: exposureWhileUnknown,
-        final_exposure: childExposureAfter,
+        exposure_after_first_settlement: childExposureAfterFirstSettlement,
+        final_exposure: childFinalExposure,
       },
     },
     work: {
@@ -265,3 +276,28 @@ export async function runGoldenDemo(
     },
   };
 }
+
+export async function runGoldenDemo(
+  pool: Pool,
+  options: {runtime?: Runtime; namespace?: string} = {},
+) {
+  await assertDemoDatabase(pool);
+  return executeGoldenScenario(pool, {
+    ...options,
+    mode: 'local_sandbox',
+  });
+}
+
+export async function runHostedGoldenDemo(
+  pool: Pool,
+  options: {runtime?: Runtime; namespace: string},
+) {
+  return executeGoldenScenario(pool, {
+    ...options,
+    mode: 'hosted_sandbox',
+  });
+}
+
+export type GoldenDemoResult = Awaited<
+  ReturnType<typeof runHostedGoldenDemo>
+>;

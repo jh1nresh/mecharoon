@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { createPool } from "../src/server/db/pool";
@@ -30,14 +30,16 @@ async function main(): Promise<void> {
       }
     }
 
-    const migration = await readFile(
-      resolve(process.cwd(), "db/migrations/001_verified_settlement_v0.sql"),
-      "utf8",
-    );
-    await pool.query(migration);
-    process.stdout.write(
-      "Applied db/migrations/001_verified_settlement_v0.sql\n",
-    );
+    const migrationDirectory = resolve(process.cwd(), "db/migrations");
+    const migrationFiles = (await readdir(migrationDirectory))
+      .filter((file) => /^\d+_.+\.sql$/.test(file))
+      .sort();
+
+    for (const file of migrationFiles) {
+      const migration = await readFile(resolve(migrationDirectory, file), "utf8");
+      await pool.query(migration);
+      process.stdout.write(`Applied db/migrations/${file}\n`);
+    }
   } finally {
     await pool.end();
   }

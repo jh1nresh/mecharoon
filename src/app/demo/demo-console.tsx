@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useReducedMotion} from 'motion/react';
 
 import styles from './demo.module.css';
@@ -17,6 +17,12 @@ type ErrorEnvelope = {
   message?: string;
 };
 
+type SuccessEnvelope = {
+  resource?: DemoResult;
+};
+
+type DemoMode = 'walkthrough' | 'local' | 'hosted';
+
 const WALKTHROUGH_STEP_DURATION_MS = 1450;
 
 function dollars(minor: string): string {
@@ -28,7 +34,7 @@ function shortHash(value: string | null | undefined): string {
   return `${value.slice(0, 12)}…${value.slice(-8)}`;
 }
 
-export default function DemoConsole({enabled}: {enabled: boolean}) {
+export default function DemoConsole({mode}: {mode: DemoMode}) {
   const reduceMotion = useReducedMotion();
   const [result, setResult] = useState<DemoResult | null>(null);
   const [state, setState] = useState<'idle' | 'running' | 'error'>('idle');
@@ -36,8 +42,10 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
   const [demoToken, setDemoToken] = useState('');
   const [walkthroughStep, setWalkthroughStep] = useState(0);
   const [isWalkthroughPlaying, setIsWalkthroughPlaying] = useState(false);
+  const hostedIdempotencyKey = useRef<string | null>(null);
 
-  const isHostedWalkthrough = !enabled;
+  const isHostedWalkthrough = mode === 'walkthrough';
+  const isHostedSandbox = mode === 'hosted';
   const walkthroughIsPlaying =
     isWalkthroughPlaying && reduceMotion === false;
   const activeWalkthroughStep =
@@ -124,23 +132,44 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
   async function runDemo() {
     setState('running');
     setError('');
+    const idempotencyKey = isHostedSandbox
+      ? (hostedIdempotencyKey.current ??= crypto.randomUUID())
+      : null;
     try {
-      const response = await fetch('/api/v0/demo/run', {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${demoToken.trim()}`,
-          'content-type': 'application/json',
-          'x-mecharoon-demo': 'run',
+      const response = await fetch(
+        isHostedSandbox ? '/api/v0/sandbox/runs' : '/api/v0/demo/run',
+        {
+          method: 'POST',
+          headers: isHostedSandbox
+            ? {
+                authorization: `Bearer ${demoToken.trim()}`,
+                'Idempotency-Key': idempotencyKey!,
+              }
+            : {
+                authorization: `Bearer ${demoToken.trim()}`,
+                'content-type': 'application/json',
+                'x-mecharoon-demo': 'run',
+              },
         },
-      });
-      const body = (await response.json()) as DemoResult | ErrorEnvelope;
+      );
+      const body = (await response.json()) as
+        | DemoResult
+        | ErrorEnvelope
+        | SuccessEnvelope;
       if (!response.ok) {
         const failure = body as ErrorEnvelope;
         throw new Error(
           [failure.reason_code, failure.message].filter(Boolean).join(': '),
         );
       }
-      setResult(body as DemoResult);
+      const nextResult = isHostedSandbox
+        ? (body as SuccessEnvelope).resource
+        : (body as DemoResult);
+      if (!nextResult) {
+        throw new Error('SANDBOX_RESULT_MISSING');
+      }
+      setResult(nextResult);
+      hostedIdempotencyKey.current = null;
       setState('idle');
     } catch (cause) {
       setState('error');
@@ -179,16 +208,20 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
           <span className={styles.eyebrow}>
             {isHostedWalkthrough
               ? 'HOSTED WALKTHROUGH · ILLUSTRATIVE DATA'
-              : 'LOCAL SANDBOX · POSTGRESQL SOURCE OF TRUTH'}
+              : isHostedSandbox
+                ? 'INVITE-ONLY HOSTED SANDBOX · POSTGRESQL SOURCE OF TRUTH'
+                : 'LOCAL SANDBOX · POSTGRESQL SOURCE OF TRUTH'}
           </span>
           <h1>Trace one verified job to settlement.</h1>
           <p>
             {isHostedWalkthrough
               ? 'Step through the Mecharoon control loop without connecting a database, wallet, or payment rail.'
-              : 'Run the complete Mecharoon wedge: delegated authority, atomic reservation, failed evidence, settlement uncertainty, reconciliation, FinalReceipt, and a higher next-job limit.'}
+              : isHostedSandbox
+                ? 'Run one fixed PostgreSQL-backed workflow through delegated authority, atomic reservation, settlement uncertainty, reconciliation, and a FinalReceipt.'
+                : 'Run the complete Mecharoon wedge: delegated authority, atomic reservation, failed evidence, settlement uncertainty, reconciliation, FinalReceipt, and a higher next-job limit.'}
           </p>
           <div className={styles.badges} aria-label="Demo boundaries">
-            <span>OFFCHAIN CONTROL</span>
+            <span>{isHostedSandbox ? 'REAL API STATE' : 'OFFCHAIN CONTROL'}</span>
             <span>
               {isHostedWalkthrough ? 'NO PRODUCTION API' : 'SIMULATED ONCHAIN'}
             </span>
@@ -206,7 +239,9 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
           <p>
             {isHostedWalkthrough
               ? 'A fixed client-side replay of the deterministic flow verified by the local PostgreSQL test suite. No production API, database, blockchain, wallet, or real funds are used.'
-              : 'Each authorized run creates an isolated authority tree and reads the result back from the database.'}
+              : isHostedSandbox
+                ? 'Each authorized API run creates an isolated authority tree in PostgreSQL. The workflow and settlement adapter are fixed, simulated, and move no real funds.'
+                : 'Each authorized run creates an isolated authority tree and reads the result back from the database.'}
           </p>
           {isHostedWalkthrough ? (
             <button
@@ -222,15 +257,21 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
                   ? 'Restart walkthrough'
                   : 'Restart animation'}
             </button>
-          ) : enabled ? (
+          ) : (
             <>
               <label className={styles.tokenField}>
-                <span>LOCAL DEMO TOKEN</span>
+                <span>
+                  {isHostedSandbox ? 'INVITE API KEY' : 'LOCAL DEMO TOKEN'}
+                </span>
                 <input
                   type="password"
                   value={demoToken}
                   onChange={(event) => setDemoToken(event.target.value)}
-                  placeholder="Enter MECHAROON_DEMO_TOKEN"
+                  placeholder={
+                    isHostedSandbox
+                      ? 'Enter invite-only API key'
+                      : 'Enter MECHAROON_DEMO_TOKEN'
+                  }
                   autoComplete="off"
                   spellCheck={false}
                   aria-describedby="demo-token-boundary"
@@ -249,11 +290,12 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
                     : 'Run verified settlement'}
               </button>
             </>
-          ) : null}
+          )}
           {!isHostedWalkthrough && (
             <span className={styles.boundary} id="demo-token-boundary">
-              Kept in memory for this tab only. The route is unavailable in
-              production.
+              {isHostedSandbox
+                ? 'Kept in memory for this tab only. Fixed simulated workflow; no funds move.'
+                : 'Kept in memory for this tab only. The route is unavailable in production.'}
             </span>
           )}
         </div>

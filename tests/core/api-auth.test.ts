@@ -4,14 +4,17 @@ import test from 'node:test';
 import {
   authorize,
   authorizeDemo,
+  authorizeHostedSandbox,
   jsonResult,
   readJsonObject,
   requireIdempotencyKey,
 } from '../../src/app/api/v0/_lib/http';
 import {DomainError} from '../../src/server/domain/errors';
 
-const demoEnvironment = {
+const authEnvironment = {
   MECHAROON_DEMO_MODE: process.env.MECHAROON_DEMO_MODE,
+  MECHAROON_HOSTED_SANDBOX_MODE:
+    process.env.MECHAROON_HOSTED_SANDBOX_MODE,
   MECHAROON_BUYER_ID: process.env.MECHAROON_BUYER_ID,
   MECHAROON_BUYER_TOKEN: process.env.MECHAROON_BUYER_TOKEN,
   MECHAROON_SELLER_ID: process.env.MECHAROON_SELLER_ID,
@@ -19,9 +22,15 @@ const demoEnvironment = {
   MECHAROON_EVALUATOR_TOKEN: process.env.MECHAROON_EVALUATOR_TOKEN,
   MECHAROON_OPERATOR_TOKEN: process.env.MECHAROON_OPERATOR_TOKEN,
   MECHAROON_DEMO_TOKEN: process.env.MECHAROON_DEMO_TOKEN,
+  MECHAROON_SANDBOX_PARTNER_ID:
+    process.env.MECHAROON_SANDBOX_PARTNER_ID,
+  MECHAROON_SANDBOX_TOKEN: process.env.MECHAROON_SANDBOX_TOKEN,
 };
 
-function useLocalCredentials() {
+const hostedSandboxToken =
+  'sandbox-token-0123456789abcdef0123456789abcdef';
+
+function configureLocalCredentials() {
   process.env.MECHAROON_DEMO_MODE = 'true';
   process.env.MECHAROON_BUYER_ID = 'buyer_test';
   process.env.MECHAROON_BUYER_TOKEN = 'buyer-token';
@@ -32,8 +41,15 @@ function useLocalCredentials() {
   process.env.MECHAROON_DEMO_TOKEN = 'demo-token';
 }
 
+function configureHostedCredentials() {
+  configureLocalCredentials();
+  process.env.MECHAROON_HOSTED_SANDBOX_MODE = 'true';
+  process.env.MECHAROON_SANDBOX_PARTNER_ID = 'design_partner_01';
+  process.env.MECHAROON_SANDBOX_TOKEN = hostedSandboxToken;
+}
+
 test.after(() => {
-  for (const [key, value] of Object.entries(demoEnvironment)) {
+  for (const [key, value] of Object.entries(authEnvironment)) {
     if (value === undefined) {
       delete process.env[key];
     } else {
@@ -43,7 +59,7 @@ test.after(() => {
 });
 
 test('scoped tokens cannot cross buyer, seller, evaluator, and operator roles', () => {
-  useLocalCredentials();
+  configureLocalCredentials();
 
   const buyer = authorize(
     new Request('http://localhost', {
@@ -99,7 +115,7 @@ test('scoped tokens cannot cross buyer, seller, evaluator, and operator roles', 
 });
 
 test('missing and invalid tokens fail closed', () => {
-  useLocalCredentials();
+  configureLocalCredentials();
 
   assert.throws(
     () => authorize(new Request('http://localhost'), ['buyer']),
@@ -122,7 +138,7 @@ test('missing and invalid tokens fail closed', () => {
 });
 
 test('duplicate configured tokens fail closed instead of escalating privileges', () => {
-  useLocalCredentials();
+  configureLocalCredentials();
   process.env.MECHAROON_OPERATOR_TOKEN = 'buyer-token';
 
   assert.throws(
@@ -139,7 +155,7 @@ test('duplicate configured tokens fail closed instead of escalating privileges',
       error.httpStatus === 503,
   );
 
-  useLocalCredentials();
+  configureLocalCredentials();
   process.env.MECHAROON_DEMO_TOKEN = 'seller-token';
   assert.throws(
     () =>
@@ -156,7 +172,7 @@ test('duplicate configured tokens fail closed instead of escalating privileges',
 });
 
 test('the local demo requires its own configured token', () => {
-  useLocalCredentials();
+  configureLocalCredentials();
 
   assert.throws(
     () => authorizeDemo(new Request('http://localhost')),
@@ -189,6 +205,111 @@ test('the local demo requires its own configured token', () => {
     (error) =>
       error instanceof DomainError &&
       error.reasonCode === 'DEMO_AUTH_NOT_CONFIGURED' &&
+      error.httpStatus === 503,
+  );
+});
+
+test('the hosted sandbox requires an isolated invite token and partner', () => {
+  configureHostedCredentials();
+
+  assert.deepEqual(
+    authorizeHostedSandbox(
+      new Request('http://localhost', {
+        headers: {authorization: `Bearer ${hostedSandboxToken}`},
+      }),
+    ),
+    {partnerId: 'design_partner_01'},
+  );
+  assert.throws(
+    () => authorizeHostedSandbox(new Request('http://localhost')),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'SANDBOX_AUTHENTICATION_REQUIRED' &&
+      error.httpStatus === 401,
+  );
+  assert.throws(
+    () =>
+      authorizeHostedSandbox(
+        new Request('http://localhost', {
+          headers: {authorization: 'Bearer wrong-token'},
+        }),
+      ),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'SANDBOX_AUTHENTICATION_REQUIRED' &&
+      error.httpStatus === 401,
+  );
+
+  configureHostedCredentials();
+  delete process.env.MECHAROON_SANDBOX_PARTNER_ID;
+  assert.throws(
+    () =>
+      authorizeHostedSandbox(
+        new Request('http://localhost', {
+          headers: {authorization: `Bearer ${hostedSandboxToken}`},
+        }),
+      ),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'SANDBOX_AUTH_NOT_CONFIGURED' &&
+      error.httpStatus === 503,
+  );
+
+  configureHostedCredentials();
+  process.env.MECHAROON_SANDBOX_PARTNER_ID = 'INVALID-PARTNER';
+  assert.throws(
+    () =>
+      authorizeHostedSandbox(
+        new Request('http://localhost', {
+          headers: {authorization: `Bearer ${hostedSandboxToken}`},
+        }),
+      ),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'SANDBOX_AUTH_NOT_CONFIGURED' &&
+      error.httpStatus === 503,
+  );
+
+  configureHostedCredentials();
+  delete process.env.MECHAROON_SANDBOX_TOKEN;
+  assert.throws(
+    () => authorizeHostedSandbox(new Request('http://localhost')),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'SANDBOX_AUTH_NOT_CONFIGURED' &&
+      error.httpStatus === 503,
+  );
+
+  configureHostedCredentials();
+  process.env.MECHAROON_SANDBOX_TOKEN = 'too-short';
+  assert.throws(
+    () =>
+      authorizeHostedSandbox(
+        new Request('http://localhost', {
+          headers: {authorization: 'Bearer too-short'},
+        }),
+      ),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'SANDBOX_AUTH_NOT_CONFIGURED' &&
+      error.httpStatus === 503,
+  );
+});
+
+test('a hosted sandbox token duplicated across roles fails closed', () => {
+  configureHostedCredentials();
+  process.env.MECHAROON_SANDBOX_TOKEN = 'buyer-token';
+
+  assert.throws(
+    () =>
+      authorizeHostedSandbox(
+        new Request('http://localhost', {
+          headers: {authorization: 'Bearer buyer-token'},
+        }),
+      ),
+    (error) =>
+      error instanceof DomainError &&
+      error.reasonCode === 'AUTH_CONFIGURATION_INVALID' &&
       error.httpStatus === 503,
   );
 });
