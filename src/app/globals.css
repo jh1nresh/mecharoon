@@ -654,7 +654,7 @@ button:disabled {
 
 .replay-button {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 50px;
   align-items: center;
   justify-content: center;
   gap: 7px;
