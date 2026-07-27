@@ -237,6 +237,32 @@
   padding: 88px 0 0;
 }
 
+.walkthroughAnnouncement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.walkthroughState {
+  animation: walkthrough-state-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes walkthrough-state-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .walkthroughHeader {
   display: flex;
   align-items: end;
@@ -294,6 +320,22 @@
   letter-spacing: -0.025em;
 }
 
+.playbackProgress {
+  height: 2px;
+  margin-top: 20px;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.playbackProgress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--reserve);
+  transform-origin: left center;
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .stepRail {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -316,12 +358,21 @@
   color: var(--ink);
   cursor: pointer;
   text-align: left;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stepRail button:hover,
 .stepRail .stepActive {
   border-color: var(--reserve);
   background: var(--reserve-pale);
+}
+
+.stepRail .stepActive {
+  transform: translateY(-2px);
+}
+
+.stepRail .stepComplete {
+  border-color: color-mix(in srgb, var(--reserve) 55%, var(--line-dark));
 }
 
 .stepRail button:focus-visible,
@@ -381,6 +432,7 @@
   width: min(100% - 48px, 1180px);
   margin-inline: auto;
   padding: 88px 0;
+  animation: walkthrough-state-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .resultHeader {
@@ -816,5 +868,19 @@
 @media (prefers-reduced-motion: reduce) {
   .runButton {
     transition: none;
+  }
+
+  .walkthroughState,
+  .result {
+    animation: none;
+  }
+
+  .playbackProgress span,
+  .stepRail button {
+    transition: none;
+  }
+
+  .stepRail .stepActive {
+    transform: none;
   }
 }

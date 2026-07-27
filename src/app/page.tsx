@@ -5,6 +5,8 @@ import Image from 'next/image';
 import {useReducedMotion} from 'motion/react';
 
 const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Settle', 'Reconcile', 'Receipt'];
+const HERO_AUTOPLAY_DELAY_MS = 850;
+const HERO_STAGE_DURATION_MS = 840;
 
 const agents = [
   {
@@ -172,9 +174,22 @@ function TransactionPanel({
       </div>
 
       <div className="stage-track" aria-label={`Current stage: ${stages[currentStage]}`}>
+        <span
+          className="stage-progress"
+          style={{
+            transform: `scaleX(${currentStage / (stages.length - 1)})`,
+          }}
+          aria-hidden="true"
+        />
         {stages.map((stage, index) => (
           <span
-            className={index <= currentStage ? 'stage-node is-complete' : 'stage-node'}
+            className={[
+              'stage-node',
+              index <= currentStage ? 'is-complete' : '',
+              index === currentStage ? 'is-current' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             key={stage}
           >
             <i />
@@ -322,9 +337,37 @@ export default function Home() {
   const [currentStage, setCurrentStage] = useState(stages.length - 1);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState(0);
+  const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
+  const [pageIsVisible, setPageIsVisible] = useState(true);
 
   useEffect(() => {
-    if (!isRunning) return;
+    const handleVisibilityChange = () => {
+      setPageIsVisible(!document.hidden);
+    };
+
+    handleVisibilityChange();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hasAutoPlayed || reduceMotion !== false || !pageIsVisible) return;
+
+    const timer = window.setTimeout(() => {
+      setHasAutoPlayed(true);
+      setSelectedAgent(0);
+      setCurrentStage(0);
+      setIsRunning(true);
+    }, HERO_AUTOPLAY_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [hasAutoPlayed, pageIsVisible, reduceMotion]);
+
+  useEffect(() => {
+    if (!isRunning || !pageIsVisible) return;
 
     if (reduceMotion || currentStage >= stages.length - 1) return;
 
@@ -332,12 +375,13 @@ export default function Home() {
       const nextStage = currentStage + 1;
       setCurrentStage(nextStage);
       if (nextStage === stages.length - 1) setIsRunning(false);
-    }, 620);
+    }, HERO_STAGE_DURATION_MS);
 
     return () => window.clearTimeout(timer);
-  }, [currentStage, isRunning, reduceMotion]);
+  }, [currentStage, isRunning, pageIsVisible, reduceMotion]);
 
   const runDemo = () => {
+    setHasAutoPlayed(true);
     setSelectedAgent(0);
     if (reduceMotion) {
       setCurrentStage(stages.length - 1);
@@ -349,8 +393,14 @@ export default function Home() {
   };
 
   const inspectStage = (index: number) => {
+    setHasAutoPlayed(true);
     setIsRunning(false);
     setCurrentStage(index);
+  };
+
+  const inspectAgent = (index: number) => {
+    setHasAutoPlayed(true);
+    setSelectedAgent(index);
   };
 
   return (
@@ -391,7 +441,7 @@ export default function Home() {
               isRunning={isRunning}
               onRun={runDemo}
               selectedAgent={selectedAgent}
-              onSelectAgent={setSelectedAgent}
+              onSelectAgent={inspectAgent}
             />
           </div>
         </section>
