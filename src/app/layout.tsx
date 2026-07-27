@@ -16,9 +16,9 @@ const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(configuredSiteUrl ?? 'http://localhost:3000'),
-  title: 'Mecharoon | Financial Control Infrastructure for Agentic Work',
+  title: 'Mecharoon | Verify agent work. Then pay.',
   description:
-    'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
+    'Verify agent work offchain, authorize only approved value for onchain settlement, and use finalized receipts to set future limits. MVP settlement is simulated.',
   ...(configuredSiteUrl ? {alternates: {canonical: '/'}} : {}),
   robots: {
     index: Boolean(configuredSiteUrl),
@@ -28,23 +28,23 @@ export const metadata: Metadata = {
     type: 'website',
     ...(configuredSiteUrl ? {url: configuredSiteUrl} : {}),
     siteName: 'Mecharoon',
-    title: 'The financial control infrastructure for agentic work.',
+    title: 'Verify agent work. Then pay.',
     description:
-      'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
+      'Verify agent work offchain, authorize only approved value for onchain settlement, and use finalized receipts to set future limits. MVP settlement is simulated.',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Mecharoon Agent Spend Control Plane',
+        alt: 'Mecharoon: verify agent work, then pay',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The financial control infrastructure for agentic work.',
+    title: 'Verify agent work. Then pay.',
     description:
-      'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
+      'Verify agent work offchain, authorize only approved value for onchain settlement, and use finalized receipts to set future limits. MVP settlement is simulated.',
     images: ['/opengraph-image'],
   },
 };

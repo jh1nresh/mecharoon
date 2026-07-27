@@ -1,6 +1,6 @@
 import {ImageResponse} from 'next/og';
 
-export const alt = 'Mecharoon Agent Spend Control Plane';
+export const alt = 'Mecharoon: verify agent work, then pay';
 export const size = {
   width: 1200,
   height: 630,
@@ -135,7 +135,7 @@ export default function OpenGraphImage() {
                 letterSpacing: '0.09em',
               }}
             >
-              AGENT SPEND CONTROL PLANE
+              VERIFIED SETTLEMENT FOR AGENT WORK
             </span>
           </div>
 
@@ -158,7 +158,7 @@ export default function OpenGraphImage() {
                   lineHeight: 0.98,
                 }}
               >
-                The financial control infrastructure for agentic work.
+                Verify agent work. Then pay.
               </span>
               <span
                 style={{
@@ -168,7 +168,7 @@ export default function OpenGraphImage() {
                   lineHeight: 1.45,
                 }}
               >
-                Delegate authority. Reserve atomically. Reconcile every payment.
+                Verify work offchain. Authorize approved value for settlement. Let finalized receipts set future limits. MVP settlement is simulated.
               </span>
             </div>
 
@@ -195,9 +195,9 @@ export default function OpenGraphImage() {
                 <span>$20.00</span>
               </div>
               {[
-                ['Search', 'PASS', '$2'],
-                ['Extract', 'REVISE', '$3'],
-                ['Verify', 'FAIL', '$1'],
+                ['Early $8', 'DENIED', '$5 cap'],
+                ['First submit', 'REVISE', '$5 held'],
+                ['Reconcile', 'CONFIRMED', '$5 settled'],
               ].map(([name, state, amount]) => (
                 <div
                   key={name}
@@ -212,7 +212,7 @@ export default function OpenGraphImage() {
                   <span>{name}</span>
                   <span
                     style={{
-                      color: state === 'PASS' ? '#1E5E4C' : state === 'FAIL' ? '#C63D31' : '#8A560B',
+                      color: state === 'CONFIRMED' ? '#1E5E4C' : '#8A560B',
                       fontWeight: 700,
                     }}
                   >
@@ -231,8 +231,8 @@ export default function OpenGraphImage() {
                   fontWeight: 700,
                 }}
               >
-                <span>Reconciled available</span>
-                <span>$15.00</span>
+                <span>Next contextual cap</span>
+                <span>$10.00</span>
               </div>
             </div>
           </div>
