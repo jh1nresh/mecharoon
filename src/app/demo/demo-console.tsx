@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
+import {useReducedMotion} from 'motion/react';
 
 import styles from './demo.module.css';
 import {
@@ -16,6 +17,8 @@ type ErrorEnvelope = {
   message?: string;
 };
 
+const WALKTHROUGH_STEP_DURATION_MS = 1450;
+
 function dollars(minor: string): string {
   return `$${(Number(minor) / 100).toFixed(2)}`;
 }
@@ -26,13 +29,17 @@ function shortHash(value: string | null | undefined): string {
 }
 
 export default function DemoConsole({enabled}: {enabled: boolean}) {
+  const reduceMotion = useReducedMotion();
   const [result, setResult] = useState<DemoResult | null>(null);
   const [state, setState] = useState<'idle' | 'running' | 'error'>('idle');
   const [error, setError] = useState('');
   const [demoToken, setDemoToken] = useState('');
   const [walkthroughStep, setWalkthroughStep] = useState(0);
+  const [isWalkthroughPlaying, setIsWalkthroughPlaying] = useState(false);
 
   const isHostedWalkthrough = !enabled;
+  const walkthroughIsPlaying =
+    isWalkthroughPlaying && reduceMotion === false;
   const activeWalkthroughStep =
     walkthroughStep > 0
       ? HOSTED_WALKTHROUGH_STEPS[walkthroughStep - 1]
@@ -42,6 +49,77 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
     walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
       ? HOSTED_WALKTHROUGH_RESULT
       : result;
+
+  useEffect(() => {
+    if (
+      !isHostedWalkthrough ||
+      !walkthroughIsPlaying ||
+      walkthroughStep < 1 ||
+      walkthroughStep >= HOSTED_WALKTHROUGH_STEPS.length
+    ) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextStep = walkthroughStep + 1;
+      setWalkthroughStep(nextStep);
+      if (nextStep === HOSTED_WALKTHROUGH_STEPS.length) {
+        setIsWalkthroughPlaying(false);
+      }
+    }, WALKTHROUGH_STEP_DURATION_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [isHostedWalkthrough, walkthroughIsPlaying, walkthroughStep]);
+
+  useEffect(() => {
+    if (!walkthroughIsPlaying) return;
+
+    const pauseWhenHidden = () => {
+      if (document.hidden) setIsWalkthroughPlaying(false);
+    };
+
+    document.addEventListener('visibilitychange', pauseWhenHidden);
+    return () => {
+      document.removeEventListener('visibilitychange', pauseWhenHidden);
+    };
+  }, [walkthroughIsPlaying]);
+
+  function startWalkthrough() {
+    setWalkthroughStep(1);
+    setIsWalkthroughPlaying(reduceMotion === false);
+  }
+
+  function selectWalkthroughStep(step: number) {
+    setIsWalkthroughPlaying(false);
+    setWalkthroughStep(step);
+  }
+
+  function showPreviousWalkthroughStep() {
+    setIsWalkthroughPlaying(false);
+    setWalkthroughStep((current) => Math.max(1, current - 1));
+  }
+
+  function toggleWalkthroughPlayback() {
+    if (reduceMotion !== false) {
+      setIsWalkthroughPlaying(false);
+      setWalkthroughStep((current) =>
+        current === HOSTED_WALKTHROUGH_STEPS.length
+          ? 1
+          : Math.max(1, current + 1),
+      );
+      return;
+    }
+
+    if (walkthroughIsPlaying) {
+      setIsWalkthroughPlaying(false);
+      return;
+    }
+
+    if (walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length) {
+      setWalkthroughStep(1);
+    }
+    setIsWalkthroughPlaying(true);
+  }
 
   async function runDemo() {
     setState('running');
@@ -134,11 +212,15 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
             <button
               className={styles.runButton}
               type="button"
-              onClick={() => setWalkthroughStep(1)}
+              onClick={startWalkthrough}
             >
               {walkthroughStep === 0
-                ? 'Start the walkthrough'
-                : 'Restart from delegation'}
+                ? reduceMotion
+                  ? 'Start the walkthrough'
+                  : 'Play the walkthrough'
+                : reduceMotion
+                  ? 'Restart walkthrough'
+                  : 'Restart animation'}
             </button>
           ) : enabled ? (
             <>
@@ -204,36 +286,60 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
       </div>
 
       {isHostedWalkthrough && activeWalkthroughStep && (
-        <section className={styles.walkthrough} aria-live="polite">
-          <div className={styles.walkthroughHeader}>
-            <div>
-              <span className={styles.eyebrow}>
-                STEP {String(activeWalkthroughStep.step).padStart(2, '0')} OF{' '}
-                {HOSTED_WALKTHROUGH_STEPS.length}
+        <section className={styles.walkthrough}>
+          <span
+            className={styles.walkthroughAnnouncement}
+            aria-live={walkthroughIsPlaying ? 'off' : 'polite'}
+            aria-atomic="true"
+          >
+            Step {activeWalkthroughStep.step} of{' '}
+            {HOSTED_WALKTHROUGH_STEPS.length}:{' '}
+            {activeWalkthroughStep.code.replaceAll('_', ' ')},{' '}
+            {activeWalkthroughStep.status}
+          </span>
+
+          <div
+            className={styles.walkthroughState}
+            key={activeWalkthroughStep.step}
+          >
+            <div className={styles.walkthroughHeader}>
+              <div>
+                <span className={styles.eyebrow}>
+                  STEP {String(activeWalkthroughStep.step).padStart(2, '0')} OF{' '}
+                  {HOSTED_WALKTHROUGH_STEPS.length}
+                </span>
+                <h2>{activeWalkthroughStep.code.replaceAll('_', ' ')}</h2>
+              </div>
+              <span className={styles.complete}>
+                {activeWalkthroughStep.status.toUpperCase()}
               </span>
-              <h2>{activeWalkthroughStep.code.replaceAll('_', ' ')}</h2>
             </div>
-            <span className={styles.complete}>
-              {activeWalkthroughStep.status.toUpperCase()}
-            </span>
+
+            <p className={styles.walkthroughDetail}>
+              {activeWalkthroughStep.detail}
+            </p>
+
+            <div className={styles.snapshot} aria-label="Illustrative ledger state">
+              {[
+                ['AUTHORITY', activeWalkthroughStep.authority],
+                ['RESERVED', activeWalkthroughStep.reserved],
+                ['SETTLEMENT', activeWalkthroughStep.settlement],
+                ['NEXT LIMIT', activeWalkthroughStep.next_limit],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <p className={styles.walkthroughDetail}>
-            {activeWalkthroughStep.detail}
-          </p>
-
-          <div className={styles.snapshot} aria-label="Illustrative ledger state">
-            {[
-              ['AUTHORITY', activeWalkthroughStep.authority],
-              ['RESERVED', activeWalkthroughStep.reserved],
-              ['SETTLEMENT', activeWalkthroughStep.settlement],
-              ['NEXT LIMIT', activeWalkthroughStep.next_limit],
-            ].map(([label, value]) => (
-              <div key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </div>
-            ))}
+          <div className={styles.playbackProgress} aria-hidden="true">
+            <span
+              style={{
+                transform: `scaleX(${walkthroughStep / HOSTED_WALKTHROUGH_STEPS.length})`,
+              }}
+            />
           </div>
 
           <ol className={styles.stepRail} aria-label="Walkthrough steps">
@@ -242,9 +348,14 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
                 <button
                   type="button"
                   className={
-                    step.step === walkthroughStep ? styles.stepActive : undefined
+                    [
+                      step.step < walkthroughStep ? styles.stepComplete : '',
+                      step.step === walkthroughStep ? styles.stepActive : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ') || undefined
                   }
-                  onClick={() => setWalkthroughStep(step.step)}
+                  onClick={() => selectWalkthroughStep(step.step)}
                   aria-current={
                     step.step === walkthroughStep ? 'step' : undefined
                   }
@@ -261,9 +372,7 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() =>
-                setWalkthroughStep((current) => Math.max(1, current - 1))
-              }
+              onClick={showPreviousWalkthroughStep}
               disabled={walkthroughStep === 1}
             >
               Previous state
@@ -271,17 +380,17 @@ export default function DemoConsole({enabled}: {enabled: boolean}) {
             <button
               type="button"
               className={styles.runButton}
-              onClick={() =>
-                setWalkthroughStep((current) =>
-                  current === HOSTED_WALKTHROUGH_STEPS.length
-                    ? 1
-                    : current + 1,
-                )
-              }
+              onClick={toggleWalkthroughPlayback}
             >
-              {walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
-                ? 'Replay walkthrough'
-                : `Next: ${HOSTED_WALKTHROUGH_STEPS[walkthroughStep]?.code.replaceAll('_', ' ')}`}
+              {reduceMotion
+                ? walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
+                  ? 'Replay walkthrough'
+                  : 'Next state'
+                : walkthroughIsPlaying
+                  ? 'Pause animation'
+                  : walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
+                    ? 'Replay animation'
+                    : 'Resume animation'}
             </button>
           </div>
         </section>
