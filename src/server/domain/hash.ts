@@ -1,0 +1,34 @@
+import { createHash } from "node:crypto";
+
+function normalize(value: unknown): unknown {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(normalize);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([, entryValue]) => entryValue !== undefined)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, entryValue]) => [key, normalize(entryValue)]),
+    );
+  }
+
+  return value;
+}
+
+export function stableStringify(value: unknown): string {
+  return JSON.stringify(normalize(value));
+}
+
+export function sha256(value: unknown): string {
+  return createHash("sha256").update(stableStringify(value)).digest("hex");
+}

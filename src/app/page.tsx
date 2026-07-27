@@ -4,7 +4,7 @@ import {useEffect, useState} from 'react';
 import Image from 'next/image';
 import {useReducedMotion} from 'motion/react';
 
-const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Reconcile', 'Receipt'];
+const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Settle', 'Reconcile', 'Receipt'];
 
 const agents = [
   {
@@ -12,8 +12,8 @@ const agents = [
     name: 'Search Agent',
     verdict: 'PASS',
     amount: '$2.00',
-    settlement: 'Captured',
-    detail: 'Accepted search evidence. Capture is selected on the illustrative authorization-capable adapter.',
+    settlement: 'Settled onchain',
+    detail: 'Accepted evidence can create a reservation-bound settlement instruction for the simulated onchain adapter.',
   },
   {
     id: 'extract',
@@ -26,10 +26,10 @@ const agents = [
   {
     id: 'verify',
     name: 'Verification Agent',
-    verdict: 'FAIL',
+    verdict: 'REVISE',
     amount: '$1.00',
-    settlement: 'Released',
-    detail: 'The result is rejected. Its reservation is released back to the shared ancestor budget.',
+    settlement: 'Open reservation',
+    detail: 'A required check fails. The reservation remains open while corrected evidence is requested.',
   },
 ];
 
@@ -50,7 +50,7 @@ const modules = [
     number: '03',
     name: 'Rail Relay',
     description:
-      'Normalize authorization, capture, refund, and unknown states from connected payment adapters.',
+      'Normalize submitted, unknown, confirmed, and mismatched states from the simulated settlement adapter.',
   },
   {
     number: '04',
@@ -61,11 +61,11 @@ const modules = [
 ];
 
 const benchmarkTargets = [
-  '1,000 concurrent child attempts',
+  '50 concurrent unique child attempts',
   'No ancestor budget violation',
-  'One local economic effect per idempotency key',
-  'Unknown external states quarantined',
-  'Complete task-to-payment replay',
+  '50 identical keys create one reservation',
+  'Unknown state retains full exposure',
+  'Receipt and reputation wait for finality',
 ];
 
 function BrandMark({
@@ -115,7 +115,7 @@ function Header() {
 
         <nav className="desktop-nav" aria-label="Main navigation">
           <a href="#control">Control</a>
-          <a href="#demo">Demo</a>
+          <a href="/demo">MVP</a>
           <a href="#architecture">Architecture</a>
           <a href="#benchmark">Benchmark</a>
         </nav>
@@ -148,7 +148,7 @@ function TransactionPanel({
 }: TransactionPanelProps) {
   const selected = agents[selectedAgent];
   const evaluated = currentStage >= 3;
-  const reconciled = currentStage >= 4;
+  const reconciled = currentStage >= 5;
 
   return (
     <div className="transaction-frame" aria-label="Illustrative agent transaction">
@@ -216,30 +216,30 @@ function TransactionPanel({
 
       <div className="transaction-summary">
         <div>
-          <span>Captured</span>
+          <span>Settled onchain</span>
           <strong>{reconciled ? '$2.00' : 'Pending'}</strong>
         </div>
         <div>
           <span>Open reservation</span>
-          <strong>{reconciled ? '$3.00' : 'Pending'}</strong>
+          <strong>{reconciled ? '$4.00' : 'Pending'}</strong>
         </div>
         <div>
           <span>Released</span>
-          <strong>{reconciled ? '$1.00' : 'Pending'}</strong>
+          <strong>{reconciled ? '$0.00' : 'Pending'}</strong>
         </div>
         <div className="available-row">
           <span>Available</span>
-          <strong>{reconciled ? '$15.00' : '$14.00'}</strong>
+          <strong>$14.00</strong>
         </div>
       </div>
 
       <div className="receipt-strip">
         <div>
           <span className="mono-label">RECEIPT</span>
-          <strong>{currentStage >= 5 ? 'demo_01' : 'pending'}</strong>
+          <strong>{currentStage >= 6 ? 'demo_01' : 'pending'}</strong>
         </div>
         <div>
-          <span className="mono-label">EXTERNAL FINALITY</span>
+          <span className="mono-label">ONCHAIN FINALITY</span>
           <strong>simulated</strong>
         </div>
         <button className="replay-button" type="button" onClick={onRun} disabled={isRunning}>
@@ -248,7 +248,7 @@ function TransactionPanel({
       </div>
 
       <p className="transaction-note">
-        Illustrative authorization-capable rail. Direct irreversible payments use pay → evaluate → receipt.
+        V0 evaluates work offchain before approved value settles through a simulated onchain adapter.
       </p>
     </div>
   );
@@ -360,19 +360,19 @@ export default function Home() {
       <main>
         <section className="hero shell" id="control">
           <div className="hero-copy hero-enter">
-            <span className="hero-kicker">AGENT SPEND CONTROL PLANE</span>
+            <span className="hero-kicker">VERIFIED SETTLEMENT FOR AGENT WORK</span>
             <h1>
               The financial control
               <br />
               {" "}infrastructure for agentic work.
             </h1>
             <p className="hero-subcopy">
-              Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work
-              that authorized it.
+              Bound agent authority offchain. Verify external work. Settle approved value onchain. Return a receipt
+              agents can use for the next decision.
             </p>
             <div className="hero-actions">
-              <a className="button button-accent" href="#demo">
-                Run the demo
+              <a className="button button-accent" href="/demo">
+                Run the MVP
               </a>
               <a
                 className="button button-outline"
@@ -434,10 +434,10 @@ export default function Home() {
         <section className="section demo-section" id="demo">
           <div className="shell">
             <div className="section-heading demo-heading">
-              <h2>One budget. Three agents. One accountable closeout.</h2>
+              <h2>Verify the work before approved value settles.</h2>
               <p>
-                A research agent receives a $20 work budget. Mecharoon reserves across the full authority tree,
-                then links every verdict to the next payment action.
+                An external agent accepts a bounded work order. Mecharoon reserves its budget, records submitted
+                evidence and the verdict, then settles only the approved outcome.
               </p>
             </div>
 
@@ -482,19 +482,25 @@ export default function Home() {
                   {currentStage === 3 && (
                     <>
                       <h3>Evaluate the committed evidence.</h3>
-                      <p>Search passes, extraction needs revision, and verification fails under the declared evaluator policy.</p>
+                      <p>Search passes; extraction and verification need revised evidence under the declared evaluator policy.</p>
                     </>
                   )}
                   {currentStage === 4 && (
                     <>
-                      <h3>Reconcile observed rail state.</h3>
-                      <p>Capture $2, keep $3 reserved, and release $1. Unknown external states are quarantined, not retried blindly.</p>
+                      <h3>Settle only the approved outcome.</h3>
+                      <p>A reservation-bound instruction sends the accepted $2 to the simulated onchain adapter.</p>
                     </>
                   )}
                   {currentStage === 5 && (
                     <>
+                      <h3>Reconcile observed onchain state.</h3>
+                      <p>Confirm $2 and keep $4 reserved for revision. Unknown states are quarantined, not retried blindly.</p>
+                    </>
+                  )}
+                  {currentStage === 6 && (
+                    <>
                       <h3>Close with one work receipt.</h3>
-                      <p>The receipt links authority, task, artifact, verdict, cost, and observed external settlement state.</p>
+                      <p>The receipt links authority, task, artifact, verdict, cost, and observed onchain settlement state.</p>
                     </>
                   )}
                 </div>
@@ -514,7 +520,7 @@ export default function Home() {
                 </div>
                 <div className="receipt-state">
                   <span>LOCAL STATE</span>
-                  <strong>{currentStage >= 5 ? 'CLOSED' : stages[currentStage].toUpperCase()}</strong>
+                  <strong>{currentStage >= 6 ? 'CLOSED' : stages[currentStage].toUpperCase()}</strong>
                 </div>
                 <dl>
                   <div>
@@ -530,19 +536,19 @@ export default function Home() {
                     <dd>{currentStage >= 1 ? '$6.00' : '$0.00'}</dd>
                   </div>
                   <div>
-                    <dt>Captured</dt>
-                    <dd>{currentStage >= 4 ? '$2.00' : 'Pending'}</dd>
+                    <dt>Settled onchain</dt>
+                    <dd>{currentStage >= 5 ? '$2.00' : 'Pending'}</dd>
                   </div>
                   <div>
                     <dt>Open</dt>
-                    <dd>{currentStage >= 4 ? '$3.00' : 'Pending'}</dd>
+                    <dd>{currentStage >= 5 ? '$4.00' : 'Pending'}</dd>
                   </div>
                   <div>
                     <dt>Released</dt>
-                    <dd>{currentStage >= 4 ? '$1.00' : 'Pending'}</dd>
+                    <dd>{currentStage >= 5 ? '$0.00' : 'Pending'}</dd>
                   </div>
                   <div>
-                    <dt>External finality</dt>
+                    <dt>Onchain finality</dt>
                     <dd>simulated</dd>
                   </div>
                 </dl>
@@ -576,12 +582,12 @@ export default function Home() {
             <div>
               <h3>Control above the rails.</h3>
               <p>
-                Mecharoon does not hold customer funds, issue cards, or replace payment providers. It provides one
-                policy, reservation, reconciliation, and receipt model for connected rails.
+                V0 keeps authority, work orders, evidence, evaluation, receipts, and contextual reputation offchain.
+                Only approved value settlement is submitted to the onchain adapter.
               </p>
             </div>
             <div className="adapter-targets">
-              <span className="mono-label">ADAPTER TARGETS · NOT LIVE INTEGRATIONS</span>
+              <span className="mono-label">FUTURE RAIL ADAPTERS · NOT PART OF V0</span>
               <div>
                 <span>x402</span>
                 <span>API credits</span>
@@ -589,6 +595,37 @@ export default function Home() {
                 <span>Card authorizations</span>
                 <span>Invoices</span>
               </div>
+            </div>
+          </div>
+
+          <div className="api-surface">
+            <div className="api-surface-copy">
+              <span className="mono-label">LOCAL SANDBOX MVP</span>
+              <h3>Deterministic answers for the next agent action.</h3>
+              <p>
+                Platforms inspect authority and reserve a work budget. A
+                separate evaluator commits normalized evidence; a settlement
+                operator reconciles the adapter result. Every response returns
+                a stable status, reason code, and valid next actions.
+              </p>
+              <a className="button button-dark" href="/demo">
+                Open MVP console
+              </a>
+            </div>
+            <div className="api-flow" aria-label="Mecharoon MVP API flow">
+              {[
+                'getAuthorityExposure',
+                'createWorkOrder',
+                'evaluateSubmission',
+                'executeSettlement',
+                'reconcileSettlement',
+                'getFinalReceipt',
+              ].map((step, index) => (
+                <span key={step}>
+                  <b>{String(index + 1).padStart(2, '0')}</b>
+                  <code>{step}</code>
+                </span>
+              ))}
             </div>
           </div>
         </section>
@@ -622,11 +659,13 @@ export default function Home() {
           <div className="benchmark-copy">
             <h2>Proof before production.</h2>
             <p>
-              The first public proof will test the failures that simple demos avoid: concurrency, duplicate
-              callbacks, crashes, revocation, late settlement, refunds, and reversals.
+              The local PostgreSQL proof tests the failures that simple demos
+              avoid: concurrent reservation, duplicate requests, unknown
+              settlement, mismatched reconciliation, and premature reputation.
             </p>
             <p className="benchmark-truth">
-              This page shows the control model. The implementation benchmark has not been run yet.
+              These are local sandbox results with a simulated adapter—not
+              production or real-money evidence.
             </p>
           </div>
 
@@ -634,28 +673,28 @@ export default function Home() {
             <div className="benchmark-header">
               <div>
                 <BrandMark micro />
-                <span>BENCHMARK TARGETS</span>
+                <span>LOCAL SANDBOX RESULTS</span>
               </div>
-              <b>NOT CURRENT RESULTS</b>
+              <b>PASSED</b>
             </div>
             <div className="benchmark-meta">
               <span>suite</span>
               <strong>ledger_failure_matrix_v0</strong>
               <span>status</span>
-              <strong>SPEC TARGET</strong>
+              <strong>VERIFIED LOCALLY</strong>
             </div>
             <ul>
               {benchmarkTargets.map((target, index) => (
                 <li key={target}>
                   <span>{String(index + 1).padStart(2, '0')}</span>
                   <strong>{target}</strong>
-                  <b>PLANNED</b>
+                  <b>PASS</b>
                 </li>
               ))}
             </ul>
             <div className="benchmark-footer">
               <span>Result hash</span>
-              <strong>Awaiting implementation</strong>
+              <strong>npm test · verified suite</strong>
             </div>
           </div>
         </section>

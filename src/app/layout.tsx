@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(configuredSiteUrl ?? 'http://localhost:3000'),
   title: 'Mecharoon | Financial Control Infrastructure for Agentic Work',
   description:
-    'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
+    'Bound agent authority offchain, verify external work, settle approved value onchain, and return machine-readable receipts.',
   ...(configuredSiteUrl ? {alternates: {canonical: '/'}} : {}),
   robots: {
     index: Boolean(configuredSiteUrl),
@@ -30,13 +30,13 @@ export const metadata: Metadata = {
     siteName: 'Mecharoon',
     title: 'The financial control infrastructure for agentic work.',
     description:
-      'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
+      'Bound agent authority offchain, verify external work, settle approved value onchain, and return machine-readable receipts.',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Mecharoon Agent Spend Control Plane',
+        alt: 'Mecharoon verified settlement for agent work',
       },
     ],
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'The financial control infrastructure for agentic work.',
     description:
-      'Delegate budgets across agent trees. Reserve before execution. Reconcile every payment to the work that authorized it.',
+      'Bound agent authority offchain, verify external work, settle approved value onchain, and return machine-readable receipts.',
     images: ['/opengraph-image'],
   },
 };
