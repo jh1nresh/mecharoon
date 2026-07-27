@@ -24,6 +24,8 @@ type SuccessEnvelope = {
 type DemoMode = 'walkthrough' | 'local' | 'hosted';
 
 const WALKTHROUGH_STEP_DURATION_MS = 1450;
+const WALKTHROUGH_AUTOPLAY_DELAY_MS = 850;
+const WALKTHROUGH_LOOP_DWELL_MS = 2600;
 
 function dollars(minor: string): string {
   return `$${(Number(minor) / 100).toFixed(2)}`;
@@ -42,6 +44,8 @@ export default function DemoConsole({mode}: {mode: DemoMode}) {
   const [demoToken, setDemoToken] = useState('');
   const [walkthroughStep, setWalkthroughStep] = useState(0);
   const [isWalkthroughPlaying, setIsWalkthroughPlaying] = useState(false);
+  const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = useState(false);
+  const [pageIsVisible, setPageIsVisible] = useState(true);
   const hostedIdempotencyKey = useRef<string | null>(null);
 
   const isHostedWalkthrough = mode === 'walkthrough';
@@ -54,43 +58,79 @@ export default function DemoConsole({mode}: {mode: DemoMode}) {
       : null;
   const displayResult =
     isHostedWalkthrough &&
-    walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length
+    (hasCompletedWalkthrough ||
+      walkthroughStep === HOSTED_WALKTHROUGH_STEPS.length)
       ? HOSTED_WALKTHROUGH_RESULT
       : result;
 
   useEffect(() => {
     if (
       !isHostedWalkthrough ||
-      !walkthroughIsPlaying ||
-      walkthroughStep < 1 ||
-      walkthroughStep >= HOSTED_WALKTHROUGH_STEPS.length
+      reduceMotion !== false ||
+      walkthroughStep !== 0 ||
+      !pageIsVisible
     ) {
       return;
     }
 
     const timer = window.setTimeout(() => {
+      setWalkthroughStep(1);
+      setIsWalkthroughPlaying(true);
+    }, WALKTHROUGH_AUTOPLAY_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [isHostedWalkthrough, pageIsVisible, reduceMotion, walkthroughStep]);
+
+  useEffect(() => {
+    if (
+      !isHostedWalkthrough ||
+      !walkthroughIsPlaying ||
+      !pageIsVisible ||
+      walkthroughStep < 1 ||
+      reduceMotion
+    ) {
+      return;
+    }
+
+    const reachedFinalStep =
+      walkthroughStep >= HOSTED_WALKTHROUGH_STEPS.length;
+    const timer = window.setTimeout(() => {
+      if (reachedFinalStep) {
+        setWalkthroughStep(1);
+        return;
+      }
+
       const nextStep = walkthroughStep + 1;
       setWalkthroughStep(nextStep);
       if (nextStep === HOSTED_WALKTHROUGH_STEPS.length) {
-        setIsWalkthroughPlaying(false);
+        setHasCompletedWalkthrough(true);
       }
-    }, WALKTHROUGH_STEP_DURATION_MS);
+    }, reachedFinalStep
+      ? WALKTHROUGH_LOOP_DWELL_MS
+      : WALKTHROUGH_STEP_DURATION_MS);
 
     return () => window.clearTimeout(timer);
-  }, [isHostedWalkthrough, walkthroughIsPlaying, walkthroughStep]);
+  }, [
+    isHostedWalkthrough,
+    pageIsVisible,
+    reduceMotion,
+    walkthroughIsPlaying,
+    walkthroughStep,
+  ]);
 
   useEffect(() => {
-    if (!walkthroughIsPlaying) return;
+    if (!isHostedWalkthrough) return;
 
-    const pauseWhenHidden = () => {
-      if (document.hidden) setIsWalkthroughPlaying(false);
+    const handleVisibilityChange = () => {
+      setPageIsVisible(!document.hidden);
     };
 
-    document.addEventListener('visibilitychange', pauseWhenHidden);
+    handleVisibilityChange();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', pauseWhenHidden);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [walkthroughIsPlaying]);
+  }, [isHostedWalkthrough]);
 
   function startWalkthrough() {
     setWalkthroughStep(1);

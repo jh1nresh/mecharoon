@@ -7,6 +7,7 @@ import {useReducedMotion} from 'motion/react';
 const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Settle', 'Reconcile', 'Receipt'];
 const HERO_AUTOPLAY_DELAY_MS = 850;
 const HERO_STAGE_DURATION_MS = 840;
+const HERO_LOOP_DWELL_MS = 2200;
 
 const agents = [
   {
@@ -257,8 +258,12 @@ function TransactionPanel({
           <span className="mono-label">ONCHAIN FINALITY</span>
           <strong>simulated</strong>
         </div>
-        <button className="replay-button" type="button" onClick={onRun} disabled={isRunning}>
-          {isRunning ? 'Running' : 'Replay flow'}
+        <button className="replay-button" type="button" onClick={onRun}>
+          {isRunning
+            ? 'Pause flow'
+            : currentStage === stages.length - 1
+              ? 'Replay flow'
+              : 'Resume flow'}
         </button>
       </div>
 
@@ -367,27 +372,39 @@ export default function Home() {
   }, [hasAutoPlayed, pageIsVisible, reduceMotion]);
 
   useEffect(() => {
-    if (!isRunning || !pageIsVisible) return;
+    if (!isRunning || !pageIsVisible || reduceMotion !== false) return;
 
-    if (reduceMotion || currentStage >= stages.length - 1) return;
+    const reachedReceipt = currentStage >= stages.length - 1;
 
     const timer = window.setTimeout(() => {
-      const nextStage = currentStage + 1;
-      setCurrentStage(nextStage);
-      if (nextStage === stages.length - 1) setIsRunning(false);
-    }, HERO_STAGE_DURATION_MS);
+      if (reachedReceipt) {
+        setSelectedAgent(0);
+        setCurrentStage(0);
+        return;
+      }
+
+      setCurrentStage(currentStage + 1);
+    }, reachedReceipt ? HERO_LOOP_DWELL_MS : HERO_STAGE_DURATION_MS);
 
     return () => window.clearTimeout(timer);
   }, [currentStage, isRunning, pageIsVisible, reduceMotion]);
 
-  const runDemo = () => {
+  const toggleDemo = () => {
     setHasAutoPlayed(true);
+
+    if (isRunning) {
+      setIsRunning(false);
+      return;
+    }
+
     setSelectedAgent(0);
-    if (reduceMotion) {
+    if (reduceMotion !== false) {
       setCurrentStage(stages.length - 1);
       setIsRunning(false);
     } else {
-      setCurrentStage(0);
+      if (currentStage >= stages.length - 1) {
+        setCurrentStage(0);
+      }
       setIsRunning(true);
     }
   };
@@ -439,7 +456,7 @@ export default function Home() {
             <TransactionPanel
               currentStage={currentStage}
               isRunning={isRunning}
-              onRun={runDemo}
+              onRun={toggleDemo}
               selectedAgent={selectedAgent}
               onSelectAgent={inspectAgent}
             />
@@ -511,7 +528,10 @@ export default function Home() {
                   ))}
                 </div>
 
-                <div className="flow-copy" aria-live="polite">
+                <div
+                  className="flow-copy"
+                  aria-live={isRunning ? 'off' : 'polite'}
+                >
                   <span className="mono-label">NOW INSPECTING · {stages[currentStage].toUpperCase()}</span>
                   {currentStage === 0 && (
                     <>
@@ -557,8 +577,12 @@ export default function Home() {
                   )}
                 </div>
 
-                <button className="button button-dark run-button" type="button" onClick={runDemo} disabled={isRunning}>
-                  {isRunning ? 'Running control flow' : 'Run the full sequence'}
+                <button className="button button-dark run-button" type="button" onClick={toggleDemo}>
+                  {isRunning
+                    ? 'Pause control flow'
+                    : currentStage === stages.length - 1
+                      ? 'Replay the full sequence'
+                      : 'Resume control flow'}
                 </button>
               </div>
 
