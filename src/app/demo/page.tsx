@@ -5,9 +5,9 @@ import DemoConsole from './demo-console';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Verified settlement MVP',
+  title: 'Verified settlement walkthrough',
   description:
-    'Run Mecharoon’s deterministic PostgreSQL-backed verified settlement proof.',
+    'Step through Mecharoon’s verified settlement control loop with illustrative data and no real funds.',
 };
 
 export default function DemoPage() {

@@ -115,7 +115,7 @@ function Header() {
 
         <nav className="desktop-nav" aria-label="Main navigation">
           <a href="#control">Control</a>
-          <a href="/demo">MVP</a>
+          <a href="/demo">Walkthrough</a>
           <a href="#architecture">Architecture</a>
           <a href="#benchmark">Benchmark</a>
         </nav>
@@ -374,7 +374,7 @@ export default function Home() {
             </p>
             <div className="hero-actions">
               <a className="button button-accent" href="/demo">
-                Run the MVP
+                View walkthrough
               </a>
               <a
                 className="button button-outline"
@@ -602,7 +602,7 @@ export default function Home() {
 
           <div className="api-surface">
             <div className="api-surface-copy">
-              <span className="mono-label">LOCAL SANDBOX MVP</span>
+              <span className="mono-label">HOSTED WALKTHROUGH</span>
               <h3>Deterministic answers for the next agent action.</h3>
               <p>
                 Platforms inspect authority and reserve a work budget. A
@@ -611,10 +611,13 @@ export default function Home() {
                 a stable status, reason code, and valid next actions.
               </p>
               <a className="button button-dark" href="/demo">
-                Open MVP console
+                Open walkthrough
               </a>
             </div>
-            <div className="api-flow" aria-label="Mecharoon MVP API flow">
+            <div
+              className="api-flow"
+              aria-label="Mecharoon walkthrough API flow"
+            >
               {[
                 'getAuthorityExposure',
                 'createWorkOrder',
@@ -666,7 +669,7 @@ export default function Home() {
               settlement, mismatched reconciliation, and premature reputation.
             </p>
             <p className="benchmark-truth">
-              These are local sandbox results with a simulated adapter—not
+              These are local sandbox results with a simulated adapter, not
               production or real-money evidence.
             </p>
           </div>

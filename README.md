@@ -14,8 +14,13 @@ and reconciles the adapter result into a replayable receipt.
 
 ## What this MVP proves
 
-This repository now contains a PostgreSQL-backed local sandbox, not only a
-landing-page animation.
+This repository contains two deliberately separate proof surfaces:
+
+- The public [hosted walkthrough](https://mecharoon.vercel.app/demo) steps
+  through fixed illustrative data in the browser. It makes no API calls, uses
+  no database or wallet, and moves no funds.
+- The local sandbox runs the same golden loop against PostgreSQL and reads the
+  result back from the database.
 
 The deterministic golden loop is:
 
@@ -47,8 +52,8 @@ Implemented:
 - Append-only ledger entries, settlement observations, FinalReceipts,
   reputation events, and domain events.
 - Separate buyer, seller, evaluator, and settlement-operator API identities.
-- A real `/demo` page that runs the loop against PostgreSQL and displays the
-  database-backed result.
+- A `/demo` page that is an explicitly illustrative walkthrough in production
+  and becomes the PostgreSQL-backed runner only in authorized local demo mode.
 
 Not implemented:
 
@@ -121,7 +126,7 @@ npm run dev
 Open:
 
 - Landing page: <http://localhost:3000>
-- Database-backed proof: <http://localhost:3000/demo>
+- Walkthrough or database-backed proof: <http://localhost:3000/demo>
 - Health response: <http://localhost:3000/api/v0/health>
 
 The one-click demo route requires `MECHAROON_DEMO_MODE=true`, a separately
@@ -199,13 +204,14 @@ The suite covers:
 
 ## Deployment gate
 
-Do not deploy this as a money-moving service. A later hosted sandbox needs
-production authentication, a managed PostgreSQL database, migrations, rotated
-scoped credentials, rate limits, and tenant isolation; the local demo route
-must remain disabled. A real-money pilot additionally needs a
-customer-controlled connector, provider fetch-back, webhook verification,
-hard aggregate caps, incident controls, legal review, and an independent
-security review.
+Only the fixed, client-side walkthrough is production-safe in the current
+scope. Do not deploy this as a money-moving service. A later hosted sandbox
+needs production authentication, a managed PostgreSQL database, migrations,
+rotated scoped credentials, rate limits, and tenant isolation; the local demo
+runner must remain disabled in production. A real-money pilot additionally
+needs a customer-controlled connector, provider fetch-back, webhook
+verification, hard aggregate caps, incident controls, legal review, and an
+independent security review.
 
 ## Brand assets
 

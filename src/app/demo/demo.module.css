@@ -57,7 +57,7 @@
 .hero h1 {
   max-width: 760px;
   margin: 20px 0 24px;
-  font-size: clamp(3rem, 6.2vw, 5.75rem);
+  font-size: clamp(3rem, 5vw, 4.8rem);
   font-weight: 590;
   letter-spacing: -0.065em;
   line-height: 0.94;
@@ -170,19 +170,6 @@
   text-align: center;
 }
 
-.disabled {
-  display: grid;
-  gap: 10px;
-  border-radius: 8px;
-  padding: 15px;
-  background: var(--paper-warm);
-}
-
-.disabled code {
-  overflow-x: auto;
-  font-size: 11px;
-}
-
 .contract {
   display: grid;
   width: min(100% - 48px, 1180px);
@@ -242,6 +229,152 @@
 
 .error {
   color: var(--status-fail);
+}
+
+.walkthrough {
+  width: min(100% - 48px, 1180px);
+  margin-inline: auto;
+  padding: 88px 0 0;
+}
+
+.walkthroughHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.walkthroughHeader h2 {
+  margin: 12px 0 0;
+  font-size: clamp(2.5rem, 5vw, 4.75rem);
+  font-weight: 590;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.walkthroughDetail {
+  max-width: 760px;
+  margin: 24px 0 30px;
+  color: var(--ink-soft);
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.55;
+}
+
+.snapshot {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--ink);
+  background: var(--surface);
+}
+
+.snapshot > div {
+  min-width: 0;
+  padding: 20px;
+  border-right: 1px solid var(--line-dark);
+}
+
+.snapshot > div:last-child {
+  border-right: 0;
+}
+
+.snapshot span {
+  display: block;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 740;
+  letter-spacing: 0.1em;
+}
+
+.snapshot strong {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-top: 12px;
+  font-size: 16px;
+  letter-spacing: -0.025em;
+}
+
+.stepRail {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepRail button {
+  display: grid;
+  width: 100%;
+  min-height: 66px;
+  align-content: center;
+  gap: 6px;
+  border: 1px solid var(--line-dark);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.stepRail button:hover,
+.stepRail .stepActive {
+  border-color: var(--reserve);
+  background: var(--reserve-pale);
+}
+
+.stepRail button:focus-visible,
+.secondaryButton:focus-visible,
+.runButton:focus-visible {
+  outline: 2px solid var(--reserve);
+  outline-offset: 2px;
+}
+
+.stepRail span {
+  color: var(--reserve-dark);
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+}
+
+.stepRail b {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.walkthroughActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.walkthroughActions .runButton,
+.secondaryButton {
+  width: auto;
+  min-width: 190px;
+  min-height: 48px;
+  padding: 0 18px;
+}
+
+.secondaryButton {
+  border: 1px solid var(--line-dark);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 680;
+}
+
+.secondaryButton:hover {
+  background: var(--paper-warm);
+}
+
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .result {
@@ -560,6 +693,18 @@
     grid-template-columns: 1fr;
   }
 
+  .snapshot {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .snapshot > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .snapshot > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
   .receipt {
     width: 100%;
   }
@@ -570,6 +715,7 @@
   .hero,
   .contract,
   .statusRegion,
+  .walkthrough,
   .result,
   .footer {
     width: min(100% - 28px, 1180px);
@@ -585,11 +731,12 @@
   }
 
   .hero {
+    gap: 32px;
     padding: 48px 0 58px;
   }
 
   .hero h1 {
-    font-size: clamp(2.7rem, 14vw, 4.4rem);
+    font-size: clamp(2.45rem, 11vw, 3.4rem);
   }
 
   .runPanel {
@@ -620,6 +767,37 @@
   .resultHeader {
     align-items: start;
     flex-direction: column;
+  }
+
+  .walkthroughHeader {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .snapshot {
+    grid-template-columns: 1fr;
+  }
+
+  .snapshot > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .snapshot > div:last-child {
+    border-bottom: 0;
+  }
+
+  .stepRail {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .walkthroughActions {
+    flex-direction: column-reverse;
+  }
+
+  .walkthroughActions .runButton,
+  .secondaryButton {
+    width: 100%;
   }
 
   .invariantPanel {
