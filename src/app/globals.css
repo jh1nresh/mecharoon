@@ -1135,261 +1135,29 @@ footer {
   isolation: isolate;
 }
 
-.cinematic-scene {
+.cinematic-poster,
+.cinematic-video {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  overflow: visible;
-  transform-origin: center center;
+  object-fit: cover;
+  object-position: center center;
 }
 
-.scene-floor-line {
-  fill: none;
-  opacity: 0.44;
-  stroke: #cdd9dd;
-  stroke-width: 1;
+.cinematic-poster {
+  z-index: 0;
 }
 
-.scene-floor-line-faint {
-  opacity: 0.24;
-}
-
-.flow-rail path {
-  fill: none;
-  stroke-linecap: round;
-}
-
-.flow-rail-shadow {
-  opacity: 0.055;
-  stroke: var(--ink);
-  stroke-width: 112;
-}
-
-.flow-rail-lower {
-  stroke: #c8d5d9;
-  stroke-width: 104;
-}
-
-.flow-rail-rim {
-  stroke: #f8faf9;
-  stroke-width: 96;
-}
-
-.flow-rail-channel {
-  stroke: #dbe7ea;
-  stroke-width: 66;
-}
-
-.flow-rail-highlight {
-  opacity: 0.78;
-  stroke: #ffffff;
-  stroke-width: 2;
-}
-
-.budget-cartridge text,
-.receipt-cartridge text {
-  fill: var(--ink-soft);
-  font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  font-weight: 680;
-  letter-spacing: 0.055em;
-}
-
-.budget-cartridge,
-.receipt-cartridge {
-  transform-box: view-box;
-  transform-origin: 0 0;
-}
-
-.budget-cartridge {
-  animation: budget-clearing-flow 7.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
-}
-
-.receipt-cartridge {
-  animation: receipt-clearing-flow 7.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
-}
-
-@keyframes budget-clearing-flow {
-  0% {
-    transform: translate(280px, -56px) rotate(27.7deg) scale(0.96);
-  }
-
-  8% {
-    transform: translate(410px, 12px) rotate(27.7deg) scale(1);
-  }
-
-  34% {
-    transform: translate(650px, 138px) rotate(27.7deg) scale(1);
-  }
-
-  45% {
-    transform: translate(782px, 207px) rotate(27.7deg) scale(0.96);
-  }
-
-  56%,
-  100% {
-    transform: translate(816px, 225px) rotate(27.7deg) scale(0.82);
-  }
-}
-
-@keyframes receipt-clearing-flow {
-  0%,
-  59% {
-    transform: translate(970px, 390px) rotate(27.7deg) scale(0.84);
-  }
-
-  66% {
-    transform: translate(1028px, 421px) rotate(27.7deg) scale(0.9);
-  }
-
-  78% {
-    transform: translate(1120px, 470px) rotate(27.7deg) scale(0.95);
-  }
-
-  92% {
-    transform: translate(1300px, 564px) rotate(27.7deg) scale(1);
-  }
-
-  100% {
-    transform: translate(1505px, 671px) rotate(27.7deg) scale(1);
-  }
-}
-
-.budget-cartridge .cartridge-amount,
-.receipt-cartridge .cartridge-amount {
-  fill: var(--ink);
-  font-size: 22px;
-  font-weight: 620;
-  letter-spacing: -0.04em;
-}
-
-.budget-cartridge .cartridge-cap {
-  fill: var(--muted);
-  font-size: 8px;
-}
-
-.cartridge-edge {
-  fill: #c5d1d3;
-}
-
-.cartridge-face {
-  fill: #fffdf8;
-  stroke: #b9c9ce;
-  stroke-width: 1.2;
-}
-
-.cartridge-groove {
-  fill: none;
-  opacity: 0.7;
-  stroke: #d2dcde;
-  stroke-linecap: round;
-  stroke-width: 1;
-}
-
-.receipt-seam {
-  fill: none;
-  stroke: var(--reserve);
-  stroke-width: 4;
-}
-
-.receipt-check {
-  fill: none;
-  stroke: var(--reserve);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 4;
-}
-
-.machine-ground-shadow {
-  fill: rgba(11, 31, 42, 0.065);
-}
-
-.cinematic-machine .machine-shell {
-  fill: #f8f7f2;
-  stroke: #b7c6c9;
-  stroke-linejoin: round;
-  stroke-width: 1.3;
-}
-
-.cinematic-machine .machine-shell-edge {
-  fill: #d4dfe0;
-  stroke: #a9bbbf;
-  stroke-linejoin: round;
-  stroke-width: 1.3;
-}
-
-.machine-mouth-rim {
-  fill: #b8c7ca;
-  stroke: #9dafb3;
-  stroke-linejoin: round;
-  stroke-width: 1.3;
-}
-
-.machine-mouth {
-  fill: var(--ink);
-  stroke: #314852;
-  stroke-width: 1.5;
-}
-
-.machine-mouth-depth {
-  fill: #1b3540;
-  opacity: 0.78;
-}
-
-.machine-signature {
-  fill: none;
-  opacity: 0.6;
-  stroke: var(--ink-soft);
-  stroke-linecap: round;
-  stroke-width: 5;
-}
-
-.machine-reservation-seam {
-  fill: none;
+.cinematic-video {
+  z-index: 1;
   opacity: 0;
-  stroke: var(--reserve);
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  stroke-linecap: round;
-  stroke-width: 7;
-  animation: reservation-clearing-flow 7.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  transition: opacity 420ms ease;
 }
 
-@keyframes reservation-clearing-flow {
-  0%,
-  42% {
-    opacity: 0;
-    stroke-dashoffset: 1;
-  }
-
-  50%,
-  64% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-
-  70%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-}
-
-.cinematic-machine text {
-  fill: var(--ink-soft);
-  font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  font-weight: 720;
-  letter-spacing: 0.08em;
-}
-
-.cinematic-machine .machine-name {
-  fill: var(--muted);
-  font-size: 7px;
-  font-weight: 620;
+.cinematic-video.is-ready {
+  opacity: 1;
 }
 
 .motion-toggle {
@@ -1410,12 +1178,6 @@ footer {
   font-size: 11px;
 }
 
-.money-flow-stage.is-paused .budget-cartridge,
-.money-flow-stage.is-paused .receipt-cartridge,
-.money-flow-stage.is-paused .machine-reservation-seam {
-  animation-play-state: paused;
-}
-
 @media (max-width: 1120px) {
   .hero.hero-cinematic,
   .hero-foreground,
@@ -1427,10 +1189,9 @@ footer {
     width: min(100%, 380px);
   }
 
-  .cinematic-scene {
-    width: 118%;
-    max-width: none;
-    transform: translateX(-7%);
+  .cinematic-poster,
+  .cinematic-video {
+    object-position: 62% center;
   }
 }
 
@@ -1463,13 +1224,9 @@ footer {
     font-size: 14px;
   }
 
-  .cinematic-scene {
-    top: -44px;
-    bottom: auto;
-    left: -59%;
-    width: 218%;
-    height: 660px;
-    transform: none;
+  .cinematic-poster,
+  .cinematic-video {
+    object-position: 65% top;
   }
 }
 
@@ -1497,11 +1254,9 @@ footer {
     margin-top: 20px;
   }
 
-  .cinematic-scene {
-    top: -5px;
-    left: -85%;
-    width: 220%;
-    height: 540px;
+  .cinematic-poster,
+  .cinematic-video {
+    object-position: 66% top;
   }
 
   .motion-toggle {
@@ -1512,20 +1267,8 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .budget-cartridge {
-    animation: none !important;
-    transform: translate(626px, 126px) rotate(27.7deg) scale(1);
-  }
-
-  .receipt-cartridge {
-    animation: none !important;
-    transform: translate(1125px, 472px) rotate(27.7deg) scale(1);
-  }
-
-  .machine-reservation-seam {
-    opacity: 1;
-    stroke-dashoffset: 0;
-    animation: none !important;
+  .cinematic-video {
+    display: none;
   }
 
   .motion-toggle {

@@ -1,7 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import {useState} from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 const proofFacts = [
   {
@@ -81,165 +86,97 @@ function Header() {
 
 type MoneyFlowStageProps = {
   paused: boolean;
+  reducedMotion: boolean;
 };
 
-function MoneyFlowStage({paused}: MoneyFlowStageProps) {
+const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const mediaQuery = window.matchMedia(reducedMotionQuery);
+  mediaQuery.addEventListener('change', onChange);
+
+  return () => mediaQuery.removeEventListener('change', onChange);
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia(reducedMotionQuery).matches;
+}
+
+function getReducedMotionServerSnapshot() {
+  return true;
+}
+
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot,
+  );
+}
+
+function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    if (paused) {
+      video.pause();
+      return;
+    }
+
+    void video.play().catch(() => undefined);
+  }, [paused]);
+
   return (
     <div
-      className={`money-flow-stage${paused ? ' is-paused' : ''}`}
+      className="money-flow-stage"
+      role="img"
+      aria-label="A five dollar work budget rolls through the Mecharoon clearing chamber and exits as an approved FinalReceipt"
     >
-      <svg
-        className="cinematic-scene"
-        viewBox="0 0 1440 760"
-        preserveAspectRatio="xMidYMid slice"
-        role="img"
-        aria-label="A five dollar work budget travels through the Mecharoon clearing chamber and exits as an approved receipt"
-      >
-        <defs>
-          <filter
-            id="cinematic-machine-shadow"
-            x="-30%"
-            y="-30%"
-            width="170%"
-            height="180%"
-          >
-            <feDropShadow
-              dx="0"
-              dy="22"
-              stdDeviation="18"
-              floodColor="#0b1f2a"
-              floodOpacity="0.075"
-            />
-          </filter>
-          <filter
-            id="cinematic-cartridge-shadow"
-            x="-30%"
-            y="-40%"
-            width="170%"
-            height="190%"
-          >
-            <feDropShadow
-              dx="0"
-              dy="10"
-              stdDeviation="8"
-              floodColor="#0b1f2a"
-              floodOpacity="0.08"
-            />
-          </filter>
-          <clipPath id="machine-output-clip">
-            <path d="M1012 378 1580 676 1580 790 962 466Z" />
-          </clipPath>
-        </defs>
+      <Image
+        className="cinematic-poster"
+        src="/media/hero/mecharoon-clearing-loop-no-rail-poster.jpg"
+        alt=""
+        fill
+        sizes="100vw"
+        priority
+        aria-hidden="true"
+      />
+      {!reducedMotion && (
+        <video
+          ref={videoRef}
+          className={`cinematic-video${videoReady ? ' is-ready' : ''}`}
+          autoPlay={!paused}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster="/media/hero/mecharoon-clearing-loop-no-rail-poster.jpg"
+          aria-hidden="true"
+          onCanPlay={(event) => {
+            setVideoReady(true);
 
-        <path className="scene-floor-line" d="M55 650 1045 130" />
-        <path className="scene-floor-line scene-floor-line-faint" d="M570 760 1415 316" />
-
-        <g className="flow-rail flow-rail-input">
-          <path className="flow-rail-shadow" d="M225 -54 873 286" />
-          <path className="flow-rail-lower" d="M225 -75 873 265" />
-          <path className="flow-rail-rim" d="M225 -75 873 265" />
-          <path className="flow-rail-channel" d="M225 -75 873 265" />
-          <path className="flow-rail-highlight" d="M225 -75 873 265" />
-        </g>
-
-        <g className="flow-rail flow-rail-output">
-          <path className="flow-rail-shadow" d="M1005 424 1565 718" />
-          <path className="flow-rail-lower" d="M1005 403 1565 697" />
-          <path className="flow-rail-rim" d="M1005 403 1565 697" />
-          <path className="flow-rail-channel" d="M1005 403 1565 697" />
-          <path className="flow-rail-highlight" d="M1005 403 1565 697" />
-        </g>
-
-        <g className="budget-cartridge">
-          <g filter="url(#cinematic-cartridge-shadow)">
-            <path
-              className="cartridge-edge"
-              d="M4 12 18 4h144l12 8v72l-14 8H16L4 84Z"
-            />
-            <rect
-              className="cartridge-face"
-              x="0"
-              y="0"
-              width="164"
-              height="82"
-              rx="17"
-            />
-            <path className="cartridge-groove" d="M18 17h128" />
-            <text x="18" y="37">JOB BUDGET</text>
-            <text className="cartridge-amount" x="18" y="67">$5.00</text>
-            <text className="cartridge-cap" x="113" y="66">CAP</text>
-          </g>
-        </g>
-
-        <g
-          className="cinematic-machine"
-          filter="url(#cinematic-machine-shadow)"
+            if (!paused) {
+              void event.currentTarget.play().catch(() => undefined);
+            }
+          }}
         >
-          <ellipse
-            className="machine-ground-shadow"
-            cx="940"
-            cy="584"
-            rx="220"
-            ry="66"
+          <source
+            src="/media/hero/mecharoon-clearing-loop-no-rail.webm"
+            type="video/webm"
           />
-          <path
-            className="machine-shell"
-            d="M748 348C748 288 773 242 821 216L993 307C1039 331 1062 367 1062 416L1062 528L934 600L934 463C934 433 920 411 892 396Z"
+          <source
+            src="/media/hero/mecharoon-clearing-loop-no-rail.mp4"
+            type="video/mp4"
           />
-          <path
-            className="machine-shell-edge"
-            d="M821 216 847 202 1017 292C1064 317 1088 354 1088 402L1062 416C1062 367 1039 331 993 307Z"
-          />
-          <path
-            className="machine-mouth-rim"
-            d="M934 463C934 430 949 404 979 388L1062 343C1077 335 1088 343 1088 361L1088 508L934 594Z"
-          />
-          <path
-            className="machine-mouth"
-            d="M967 467C967 445 977 428 996 418L1058 384V486L967 537Z"
-          />
-          <path
-            className="machine-mouth-depth"
-            d="M996 418 1058 384 1058 405 1000 437C979 448 967 466 967 489V467C967 445 977 428 996 418Z"
-          />
-          <path
-            className="machine-signature"
-            d="M785 436 845 468M785 455 833 480"
-          />
-          <path
-            className="machine-reservation-seam"
-            d="M982 503 1042 470"
-            pathLength="1"
-          />
-          <text x="785" y="506">MECHAROON</text>
-          <text className="machine-name" x="785" y="522">CLEARING 01</text>
-        </g>
-
-        <g clipPath="url(#machine-output-clip)">
-          <g className="receipt-cartridge">
-            <g filter="url(#cinematic-cartridge-shadow)">
-              <path
-                className="cartridge-edge"
-                d="M4 12 18 4h144l12 8v72l-14 8H16L4 84Z"
-              />
-              <rect
-                className="cartridge-face"
-                x="0"
-                y="0"
-                width="164"
-                height="82"
-                rx="17"
-              />
-              <path className="cartridge-groove" d="M18 17h128" />
-              <path className="receipt-seam" d="M0 61h164" />
-              <text x="18" y="37">SETTLEMENT READY</text>
-              <text className="cartridge-amount" x="18" y="67">$5.00</text>
-              <path className="receipt-check" d="m126 55 8 8 15-18" />
-            </g>
-          </g>
-        </g>
-      </svg>
-
+        </video>
+      )}
     </div>
   );
 }
@@ -297,6 +234,7 @@ function FinalReceipt() {
 
 export default function Home() {
   const [motionPaused, setMotionPaused] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   return (
     <div id="top">
@@ -305,7 +243,10 @@ export default function Home() {
       <main>
         <section className="hero hero-cinematic">
           <div className="hero-product hero-enter-delayed">
-            <MoneyFlowStage paused={motionPaused} />
+            <MoneyFlowStage
+              paused={motionPaused}
+              reducedMotion={reducedMotion}
+            />
           </div>
 
           <div className="shell hero-foreground">
@@ -330,19 +271,21 @@ export default function Home() {
             </div>
           </div>
 
-          <button
-            className="motion-toggle"
-            type="button"
-            onClick={() => setMotionPaused((paused) => !paused)}
-            aria-pressed={motionPaused}
-            aria-label={
-              motionPaused
-                ? 'Play money flow animation'
-                : 'Pause money flow animation'
-            }
-          >
-            <span aria-hidden="true">{motionPaused ? '▶' : 'Ⅱ'}</span>
-          </button>
+          {!reducedMotion && (
+            <button
+              className="motion-toggle"
+              type="button"
+              onClick={() => setMotionPaused((paused) => !paused)}
+              aria-pressed={motionPaused}
+              aria-label={
+                motionPaused
+                  ? 'Play money flow animation'
+                  : 'Pause money flow animation'
+              }
+            >
+              <span aria-hidden="true">{motionPaused ? '▶' : 'Ⅱ'}</span>
+            </button>
+          )}
         </section>
 
         <section className="story-section section-rule" id="flow">
