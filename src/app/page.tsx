@@ -137,14 +137,14 @@ function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
     <div
       className="money-flow-stage"
       role="img"
-      aria-label="A five dollar work budget rolls through the Mecharoon clearing chamber and exits as an approved FinalReceipt"
+      aria-label="A five dollar work budget remains visible while Mecharoon clears it, then rolls out with an approved FinalReceipt following through the same channel"
     >
       <Image
         className="cinematic-poster cinematic-poster-desktop"
         src="/media/hero/mecharoon-clearing-through-channel-poster.jpg"
         alt=""
         fill
-        sizes="100vw"
+        sizes="(max-width: 780px) 1px, 100vw"
         priority
         aria-hidden="true"
       />
