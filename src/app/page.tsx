@@ -140,11 +140,20 @@ function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
       aria-label="A five dollar work budget rolls through the Mecharoon clearing chamber and exits as an approved FinalReceipt"
     >
       <Image
-        className="cinematic-poster"
-        src="/media/hero/mecharoon-clearing-loop-no-rail-poster.jpg"
+        className="cinematic-poster cinematic-poster-desktop"
+        src="/media/hero/mecharoon-clearing-through-channel-poster.jpg"
         alt=""
         fill
         sizes="100vw"
+        priority
+        aria-hidden="true"
+      />
+      <Image
+        className="cinematic-poster cinematic-poster-mobile"
+        src="/media/hero/mecharoon-clearing-through-channel-mobile-poster.jpg"
+        alt=""
+        fill
+        sizes="(max-width: 780px) 100vw, 1px"
         priority
         aria-hidden="true"
       />
@@ -157,7 +166,6 @@ function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
           loop
           playsInline
           preload="auto"
-          poster="/media/hero/mecharoon-clearing-loop-no-rail-poster.jpg"
           aria-hidden="true"
           onCanPlay={(event) => {
             setVideoReady(true);
@@ -168,11 +176,21 @@ function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
           }}
         >
           <source
-            src="/media/hero/mecharoon-clearing-loop-no-rail.webm"
+            media="(max-width: 780px)"
+            src="/media/hero/mecharoon-clearing-through-channel-mobile.webm"
             type="video/webm"
           />
           <source
-            src="/media/hero/mecharoon-clearing-loop-no-rail.mp4"
+            media="(max-width: 780px)"
+            src="/media/hero/mecharoon-clearing-through-channel-mobile.mp4"
+            type="video/mp4"
+          />
+          <source
+            src="/media/hero/mecharoon-clearing-through-channel.webm"
+            type="video/webm"
+          />
+          <source
+            src="/media/hero/mecharoon-clearing-through-channel.mp4"
             type="video/mp4"
           />
         </video>
