@@ -1,57 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import {motion, useReducedMotion} from 'motion/react';
-import {useEffect, useState, useSyncExternalStore} from 'react';
-import {
-  HOSTED_WALKTHROUGH_STEPS,
-  type WalkthroughStep,
-} from './demo/walkthrough';
-
-const AUTOPLAY_DELAY_MS = 500;
-const STEP_DURATION_MS = 1350;
-const LOOP_DWELL_MS = 2600;
-const subscribeToHydration = () => () => {};
-const getClientHydrationSnapshot = () => true;
-const getServerHydrationSnapshot = () => false;
-
-const stepPresentation: Record<
-  string,
-  {title: string; shortLabel: string}
-> = {
-  DELEGATE: {
-    title: 'Bound the delegated authority.',
-    shortLabel: 'Delegate',
-  },
-  REPUTATION_GATE: {
-    title: 'Reject work above the current limit.',
-    shortLabel: 'Gate',
-  },
-  RESERVE: {
-    title: 'Reserve the job budget atomically.',
-    shortLabel: 'Reserve',
-  },
-  EVALUATE: {
-    title: 'Keep the budget open when work needs revision.',
-    shortLabel: 'Evaluate',
-  },
-  INSTRUCT: {
-    title: 'Authorize settlement only after a pass.',
-    shortLabel: 'Authorize',
-  },
-  QUARANTINE: {
-    title: 'Quarantine an uncertain settlement result.',
-    shortLabel: 'Hold',
-  },
-  RECONCILE: {
-    title: 'Close the job with observed finality.',
-    shortLabel: 'Reconcile',
-  },
-  COMPOUND: {
-    title: 'Let the receipt govern the next job.',
-    shortLabel: 'Next limit',
-  },
-};
+import {useState} from 'react';
 
 const proofFacts = [
   {
@@ -129,187 +79,167 @@ function Header() {
   );
 }
 
-function getStatusTone(step: WalkthroughStep) {
-  if (['authorized', 'pass', 'confirmed'].includes(step.status)) {
-    return 'is-positive';
-  }
-
-  if (['denied', 'revise'].includes(step.status)) {
-    return 'is-caution';
-  }
-
-  if (step.status === 'unknown') {
-    return 'is-unknown';
-  }
-
-  return '';
-}
-
-type ControlLoopProps = {
-  currentStepIndex: number;
-  isRunning: boolean;
-  reduceMotion: boolean;
-  motionEnabled: boolean;
-  onSelectStep: (index: number) => void;
-  onToggle: () => void;
+type MoneyFlowStageProps = {
+  paused: boolean;
 };
 
-function ControlLoop({
-  currentStepIndex,
-  isRunning,
-  reduceMotion,
-  motionEnabled,
-  onSelectStep,
-  onToggle,
-}: ControlLoopProps) {
-  const step = HOSTED_WALKTHROUGH_STEPS[currentStepIndex];
-  const presentation = stepPresentation[step.code];
-  const progress =
-    currentStepIndex / (HOSTED_WALKTHROUGH_STEPS.length - 1);
-  const reservationActive = step.reserved !== '$0';
-
+function MoneyFlowStage({paused}: MoneyFlowStageProps) {
   return (
     <div
-      className="control-card"
-      aria-label="Illustrative Mecharoon control loop"
+      className={`money-flow-stage${paused ? ' is-paused' : ''}`}
     >
-      <div className="control-card-topline">
-        <span className="control-card-label">
-          <BrandMark variant="reverse" micro />
-          Live control loop
-        </span>
-        <span className="illustrative-label">Illustrative · no funds</span>
-      </div>
-
-      <div className="work-order-heading">
-        <div>
-          <span>Work order</span>
-          <strong>Verify pricing extraction</strong>
-        </div>
-        <div>
-          <span>Job budget</span>
-          <strong>$5.00</strong>
-        </div>
-      </div>
-
-      <div className="authority-path" aria-label="Delegated authority path">
-        <div>
-          <span>Root</span>
-          <strong>$20</strong>
-        </div>
-        <i aria-hidden="true" />
-        <div>
-          <span>Child cap</span>
-          <strong>$15</strong>
-        </div>
-        <i aria-hidden="true" />
-        <div className={reservationActive ? 'is-reserved' : ''}>
-          <span>Reserved</span>
-          <strong>{step.reserved}</strong>
-        </div>
-      </div>
-
-      <div
-        className="current-control-state"
-        aria-live={isRunning ? 'off' : 'polite'}
+      <svg
+        className="cinematic-scene"
+        viewBox="0 0 1440 760"
+        preserveAspectRatio="xMidYMid slice"
+        role="img"
+        aria-label="A five dollar work budget travels through the Mecharoon clearing chamber and exits as an approved receipt"
       >
-        <div className="state-meta">
-          <span>
-            {String(currentStepIndex + 1).padStart(2, '0')} /{' '}
-            {String(HOSTED_WALKTHROUGH_STEPS.length).padStart(2, '0')}
-          </span>
-          <b className={getStatusTone(step)}>{step.status}</b>
-        </div>
-        <motion.div
-          className="state-copy"
-          key={step.code}
-          initial={motionEnabled ? {opacity: 0.35, y: 5} : false}
-          animate={{opacity: 1, y: 0}}
-          transition={
-            motionEnabled
-              ? {duration: 0.28, ease: [0.22, 1, 0.36, 1]}
-              : {duration: 0}
-          }
+        <defs>
+          <filter
+            id="cinematic-machine-shadow"
+            x="-30%"
+            y="-30%"
+            width="170%"
+            height="180%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="22"
+              stdDeviation="18"
+              floodColor="#0b1f2a"
+              floodOpacity="0.075"
+            />
+          </filter>
+          <filter
+            id="cinematic-cartridge-shadow"
+            x="-30%"
+            y="-40%"
+            width="170%"
+            height="190%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="10"
+              stdDeviation="8"
+              floodColor="#0b1f2a"
+              floodOpacity="0.08"
+            />
+          </filter>
+          <clipPath id="machine-output-clip">
+            <path d="M1012 378 1580 676 1580 790 962 466Z" />
+          </clipPath>
+        </defs>
+
+        <path className="scene-floor-line" d="M55 650 1045 130" />
+        <path className="scene-floor-line scene-floor-line-faint" d="M570 760 1415 316" />
+
+        <g className="flow-rail flow-rail-input">
+          <path className="flow-rail-shadow" d="M225 -54 873 286" />
+          <path className="flow-rail-lower" d="M225 -75 873 265" />
+          <path className="flow-rail-rim" d="M225 -75 873 265" />
+          <path className="flow-rail-channel" d="M225 -75 873 265" />
+          <path className="flow-rail-highlight" d="M225 -75 873 265" />
+        </g>
+
+        <g className="flow-rail flow-rail-output">
+          <path className="flow-rail-shadow" d="M1005 424 1565 718" />
+          <path className="flow-rail-lower" d="M1005 403 1565 697" />
+          <path className="flow-rail-rim" d="M1005 403 1565 697" />
+          <path className="flow-rail-channel" d="M1005 403 1565 697" />
+          <path className="flow-rail-highlight" d="M1005 403 1565 697" />
+        </g>
+
+        <g className="budget-cartridge">
+          <g filter="url(#cinematic-cartridge-shadow)">
+            <path
+              className="cartridge-edge"
+              d="M4 12 18 4h144l12 8v72l-14 8H16L4 84Z"
+            />
+            <rect
+              className="cartridge-face"
+              x="0"
+              y="0"
+              width="164"
+              height="82"
+              rx="17"
+            />
+            <path className="cartridge-groove" d="M18 17h128" />
+            <text x="18" y="37">JOB BUDGET</text>
+            <text className="cartridge-amount" x="18" y="67">$5.00</text>
+            <text className="cartridge-cap" x="113" y="66">CAP</text>
+          </g>
+        </g>
+
+        <g
+          className="cinematic-machine"
+          filter="url(#cinematic-machine-shadow)"
         >
-          <span>{step.code.replaceAll('_', ' ')}</span>
-          <h2>{presentation.title}</h2>
-          <p>{step.detail}</p>
-        </motion.div>
-      </div>
-
-      <dl className="control-metrics">
-        <div>
-          <dt>Authority</dt>
-          <dd>{step.authority}</dd>
-        </div>
-        <div>
-          <dt>Reserved</dt>
-          <dd className={reservationActive ? 'metric-reserved' : ''}>
-            {step.reserved}
-          </dd>
-        </div>
-        <div>
-          <dt>Settlement</dt>
-          <dd>{step.settlement}</dd>
-        </div>
-        <div>
-          <dt>Next limit</dt>
-          <dd>{step.next_limit}</dd>
-        </div>
-      </dl>
-
-      <div className="loop-progress">
-        <div className="loop-track" aria-hidden="true">
-          <motion.span
-            className="loop-progress-fill"
-            animate={{scaleX: progress}}
-            transition={
-              motionEnabled
-                ? {duration: 0.48, ease: [0.22, 1, 0.36, 1]}
-                : {duration: 0}
-            }
+          <ellipse
+            className="machine-ground-shadow"
+            cx="940"
+            cy="584"
+            rx="220"
+            ry="66"
           />
-        </div>
-        <div className="loop-steps" aria-label="Control loop steps">
-          {HOSTED_WALKTHROUGH_STEPS.map((item, index) => (
-            <button
-              type="button"
-              className={[
-                'loop-step',
-                index <= currentStepIndex ? 'is-complete' : '',
-                index <= currentStepIndex ? getStatusTone(item) : '',
-                index === currentStepIndex ? 'is-current' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => onSelectStep(index)}
-              aria-label={`Inspect ${stepPresentation[item.code].shortLabel}`}
-              aria-pressed={index === currentStepIndex}
-              key={item.code}
-            >
-              <i aria-hidden="true" />
-              <span>{stepPresentation[item.code].shortLabel}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+          <path
+            className="machine-shell"
+            d="M748 348C748 288 773 242 821 216L993 307C1039 331 1062 367 1062 416L1062 528L934 600L934 463C934 433 920 411 892 396Z"
+          />
+          <path
+            className="machine-shell-edge"
+            d="M821 216 847 202 1017 292C1064 317 1088 354 1088 402L1062 416C1062 367 1039 331 993 307Z"
+          />
+          <path
+            className="machine-mouth-rim"
+            d="M934 463C934 430 949 404 979 388L1062 343C1077 335 1088 343 1088 361L1088 508L934 594Z"
+          />
+          <path
+            className="machine-mouth"
+            d="M967 467C967 445 977 428 996 418L1058 384V486L967 537Z"
+          />
+          <path
+            className="machine-mouth-depth"
+            d="M996 418 1058 384 1058 405 1000 437C979 448 967 466 967 489V467C967 445 977 428 996 418Z"
+          />
+          <path
+            className="machine-signature"
+            d="M785 436 845 468M785 455 833 480"
+          />
+          <path
+            className="machine-reservation-seam"
+            d="M982 503 1042 470"
+            pathLength="1"
+          />
+          <text x="785" y="506">MECHAROON</text>
+          <text className="machine-name" x="785" y="522">CLEARING 01</text>
+        </g>
 
-      <div className="control-card-footer">
-        <span>
-          Auto-replay {isRunning ? 'running' : 'paused'}
-        </span>
-        <button type="button" onClick={onToggle}>
-          {reduceMotion
-            ? currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1
-              ? 'Start over'
-              : 'Next step'
-            : isRunning
-              ? 'Pause'
-              : currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1
-                ? 'Replay'
-                : 'Resume'}
-        </button>
-      </div>
+        <g clipPath="url(#machine-output-clip)">
+          <g className="receipt-cartridge">
+            <g filter="url(#cinematic-cartridge-shadow)">
+              <path
+                className="cartridge-edge"
+                d="M4 12 18 4h144l12 8v72l-14 8H16L4 84Z"
+              />
+              <rect
+                className="cartridge-face"
+                x="0"
+                y="0"
+                width="164"
+                height="82"
+                rx="17"
+              />
+              <path className="cartridge-groove" d="M18 17h128" />
+              <path className="receipt-seam" d="M0 61h164" />
+              <text x="18" y="37">SETTLEMENT READY</text>
+              <text className="cartridge-amount" x="18" y="67">$5.00</text>
+              <path className="receipt-check" d="m126 55 8 8 15-18" />
+            </g>
+          </g>
+        </g>
+      </svg>
+
     </div>
   );
 }
@@ -366,138 +296,53 @@ function FinalReceipt() {
 }
 
 export default function Home() {
-  const reduceMotion = useReducedMotion();
-  const hasHydrated = useSyncExternalStore(
-    subscribeToHydration,
-    getClientHydrationSnapshot,
-    getServerHydrationSnapshot,
-  );
-  const prefersReducedMotion = hasHydrated && reduceMotion === true;
-  const motionEnabled = hasHydrated && reduceMotion === false;
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [pageIsVisible, setPageIsVisible] = useState(true);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setPageIsVisible(!document.hidden);
-    };
-
-    handleVisibilityChange();
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener(
-        'visibilitychange',
-        handleVisibilityChange,
-      );
-    };
-  }, []);
-
-  useEffect(() => {
-    if (reduceMotion !== false || !pageIsVisible || hasStarted) return;
-
-    const timer = window.setTimeout(() => {
-      setHasStarted(true);
-      setIsRunning(true);
-    }, AUTOPLAY_DELAY_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [hasStarted, pageIsVisible, reduceMotion]);
-
-  useEffect(() => {
-    if (!isRunning || !pageIsVisible || reduceMotion !== false) return;
-
-    const atEnd =
-      currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1;
-    const timer = window.setTimeout(
-      () => {
-        setCurrentStepIndex((current) =>
-          current === HOSTED_WALKTHROUGH_STEPS.length - 1
-            ? 0
-            : current + 1,
-        );
-      },
-      atEnd ? LOOP_DWELL_MS : STEP_DURATION_MS,
-    );
-
-    return () => window.clearTimeout(timer);
-  }, [currentStepIndex, isRunning, pageIsVisible, reduceMotion]);
-
-  const selectStep = (index: number) => {
-    setHasStarted(true);
-    setCurrentStepIndex(index);
-    setIsRunning(false);
-  };
-
-  const toggleLoop = () => {
-    setHasStarted(true);
-
-    if (prefersReducedMotion) {
-      setCurrentStepIndex((current) =>
-        current === HOSTED_WALKTHROUGH_STEPS.length - 1
-          ? 0
-          : current + 1,
-      );
-      setIsRunning(false);
-      return;
-    }
-
-    if (
-      !isRunning &&
-      currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1
-    ) {
-      setCurrentStepIndex(0);
-    }
-    setIsRunning((running) => !running);
-  };
+  const [motionPaused, setMotionPaused] = useState(false);
 
   return (
     <div id="top">
       <Header />
 
       <main>
-        <section className="hero shell">
-          <div className="hero-copy hero-enter">
-            <span className="hero-kicker">
-              Verified settlement for paid agent work
-            </span>
-            <h1>
-              Verify agent work.
-              <br />
-              Then pay.
-            </h1>
-            <p className="hero-subcopy">
-              Set the job, cap the budget, and define what counts as done.
-              Mecharoon reserves the budget, checks the result, and approves
-              payment only when the work passes.
-            </p>
-            <div className="hero-actions">
-              <a className="button button-accent" href="#flow">
-                See the control loop
-              </a>
-              <a className="button button-outline" href="#pilot">
-                Join the pilot
-              </a>
-            </div>
-            <div className="hero-trust" aria-label="Current product boundary">
-              <span>PostgreSQL-backed sandbox</span>
-              <span>Simulated settlement</span>
-              <span>No real funds</span>
+        <section className="hero hero-cinematic">
+          <div className="hero-product hero-enter-delayed">
+            <MoneyFlowStage paused={motionPaused} />
+          </div>
+
+          <div className="shell hero-foreground">
+            <div className="hero-copy hero-enter">
+              <span className="hero-kicker">
+                Verified settlement for paid agent work
+              </span>
+              <h1>Verify agent work. Then pay.</h1>
+              <p className="hero-subcopy">
+                Set the job, cap the budget, and define what counts as done.
+                Mecharoon reserves the budget, checks the result, and approves
+                payment only when the work passes.
+              </p>
+              <div className="hero-actions">
+                <a className="button button-dark" href="#flow">
+                  See the control loop
+                </a>
+                <a className="hero-text-link" href="#pilot">
+                  Join the pilot <span aria-hidden="true">↗</span>
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className="hero-product hero-enter-delayed">
-            <ControlLoop
-              currentStepIndex={currentStepIndex}
-              isRunning={isRunning}
-              reduceMotion={prefersReducedMotion}
-              motionEnabled={motionEnabled}
-              onSelectStep={selectStep}
-              onToggle={toggleLoop}
-            />
-          </div>
+          <button
+            className="motion-toggle"
+            type="button"
+            onClick={() => setMotionPaused((paused) => !paused)}
+            aria-pressed={motionPaused}
+            aria-label={
+              motionPaused
+                ? 'Play money flow animation'
+                : 'Pause money flow animation'
+            }
+          >
+            <span aria-hidden="true">{motionPaused ? '▶' : 'Ⅱ'}</span>
+          </button>
         </section>
 
         <section className="story-section section-rule" id="flow">
