@@ -1,74 +1,71 @@
 'use client';
 
-import {useEffect, useState} from 'react';
 import Image from 'next/image';
-import {useReducedMotion} from 'motion/react';
+import {motion, useReducedMotion} from 'motion/react';
+import {useEffect, useState, useSyncExternalStore} from 'react';
+import {
+  HOSTED_WALKTHROUGH_STEPS,
+  type WalkthroughStep,
+} from './demo/walkthrough';
 
-const stages = ['Delegate', 'Reserve', 'Execute', 'Evaluate', 'Settle', 'Reconcile', 'Receipt'];
-const HERO_AUTOPLAY_DELAY_MS = 850;
-const HERO_STAGE_DURATION_MS = 840;
-const HERO_LOOP_DWELL_MS = 2200;
+const AUTOPLAY_DELAY_MS = 500;
+const STEP_DURATION_MS = 1350;
+const LOOP_DWELL_MS = 2600;
+const subscribeToHydration = () => () => {};
+const getClientHydrationSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
 
-const agents = [
-  {
-    id: 'search',
-    name: 'Search Agent',
-    verdict: 'PASS',
-    amount: '$2.00',
-    settlement: 'Settled onchain',
-    detail: 'Accepted evidence can create a reservation-bound settlement instruction for the simulated onchain adapter.',
+const stepPresentation: Record<
+  string,
+  {title: string; shortLabel: string}
+> = {
+  DELEGATE: {
+    title: 'Bound the delegated authority.',
+    shortLabel: 'Delegate',
   },
-  {
-    id: 'extract',
-    name: 'Extraction Agent',
-    verdict: 'REVISE',
-    amount: '$3.00',
-    settlement: 'Open reservation',
-    detail: 'Revision is requested. The reservation stays open while the child task remains active.',
+  REPUTATION_GATE: {
+    title: 'Reject work above the current limit.',
+    shortLabel: 'Gate',
   },
-  {
-    id: 'verify',
-    name: 'Verification Agent',
-    verdict: 'REVISE',
-    amount: '$1.00',
-    settlement: 'Open reservation',
-    detail: 'A required check fails. The reservation remains open while corrected evidence is requested.',
+  RESERVE: {
+    title: 'Reserve the job budget atomically.',
+    shortLabel: 'Reserve',
   },
-];
+  EVALUATE: {
+    title: 'Keep the budget open when work needs revision.',
+    shortLabel: 'Evaluate',
+  },
+  INSTRUCT: {
+    title: 'Authorize settlement only after a pass.',
+    shortLabel: 'Authorize',
+  },
+  QUARANTINE: {
+    title: 'Quarantine an uncertain settlement result.',
+    shortLabel: 'Hold',
+  },
+  RECONCILE: {
+    title: 'Close the job with observed finality.',
+    shortLabel: 'Reconcile',
+  },
+  COMPOUND: {
+    title: 'Let the receipt govern the next job.',
+    shortLabel: 'Next limit',
+  },
+};
 
-const modules = [
+const proofFacts = [
   {
-    number: '01',
-    name: 'Governor',
-    description:
-      'Set revocable limits for parent and child agents. Reserve against every ancestor before a task can spend.',
+    value: '50',
+    label: 'concurrent child attempts stay inside ancestor limits',
   },
   {
-    number: '02',
-    name: 'Settlement Interlock',
-    description:
-      'Compare the work order, committed evidence, and evaluator verdict before selecting the next payment action.',
+    value: '1',
+    label: 'reservation survives 50 identical idempotency requests',
   },
   {
-    number: '03',
-    name: 'Rail Relay',
-    description:
-      'Normalize submitted, unknown, confirmed, and mismatched states from the simulated settlement adapter.',
+    value: '0',
+    label: 'receipts are issued before settlement finality',
   },
-  {
-    number: '04',
-    name: 'Work Receipt',
-    description:
-      'Create an append-only record linking authority, task, artifact, verdict, cost, and observed settlement state.',
-  },
-];
-
-const benchmarkTargets = [
-  '50 concurrent unique child attempts',
-  'No ancestor budget violation',
-  '50 identical keys create one reservation',
-  'Unknown state retains full exposure',
-  'Receipt and reputation wait for finality',
 ];
 
 function BrandMark({
@@ -78,7 +75,9 @@ function BrandMark({
   variant?: 'color' | 'reverse';
   micro?: boolean;
 }) {
-  const asset = micro ? `mecharoon-symbol-micro-${variant}.svg` : `mecharoon-symbol-${variant}.svg`;
+  const asset = micro
+    ? `mecharoon-symbol-micro-${variant}.svg`
+    : `mecharoon-symbol-${variant}.svg`;
 
   return (
     <Image
@@ -117,16 +116,12 @@ function Header() {
         </a>
 
         <nav className="desktop-nav" aria-label="Main navigation">
-          <a href="#control">Control</a>
-          <a href="/demo">Walkthrough</a>
-          <a href="#architecture">Architecture</a>
-          <a href="#benchmark">Benchmark</a>
+          <a href="#flow">Control loop</a>
+          <a href="#proof">Proof</a>
+          <a href="#boundary">Boundary</a>
         </nav>
 
-        <a
-          className="button button-small button-dark"
-          href="#pilot"
-        >
+        <a className="button button-small button-dark" href="#pilot">
           Join pilot
         </a>
       </div>
@@ -134,215 +129,254 @@ function Header() {
   );
 }
 
-type TransactionPanelProps = {
-  currentStage: number;
+function getStatusTone(step: WalkthroughStep) {
+  if (['authorized', 'pass', 'confirmed'].includes(step.status)) {
+    return 'is-positive';
+  }
+
+  if (['denied', 'revise'].includes(step.status)) {
+    return 'is-caution';
+  }
+
+  if (step.status === 'unknown') {
+    return 'is-unknown';
+  }
+
+  return '';
+}
+
+type ControlLoopProps = {
+  currentStepIndex: number;
   isRunning: boolean;
-  onRun: () => void;
-  selectedAgent: number;
-  onSelectAgent: (index: number) => void;
+  reduceMotion: boolean;
+  motionEnabled: boolean;
+  onSelectStep: (index: number) => void;
+  onToggle: () => void;
 };
 
-function TransactionPanel({
-  currentStage,
+function ControlLoop({
+  currentStepIndex,
   isRunning,
-  onRun,
-  selectedAgent,
-  onSelectAgent,
-}: TransactionPanelProps) {
-  const selected = agents[selectedAgent];
-  const evaluated = currentStage >= 3;
-  const reconciled = currentStage >= 5;
+  reduceMotion,
+  motionEnabled,
+  onSelectStep,
+  onToggle,
+}: ControlLoopProps) {
+  const step = HOSTED_WALKTHROUGH_STEPS[currentStepIndex];
+  const presentation = stepPresentation[step.code];
+  const progress =
+    currentStepIndex / (HOSTED_WALKTHROUGH_STEPS.length - 1);
+  const reservationActive = step.reserved !== '$0';
 
   return (
-    <div className="transaction-frame" aria-label="Illustrative agent transaction">
-      <div className="transaction-topline">
-        <span>ILLUSTRATIVE TRANSACTION</span>
-        <span className="live-state">
-          <span className={isRunning ? 'pulse-dot is-running' : 'pulse-dot'} />
-          {isRunning ? stages[currentStage] : 'Ready to replay'}
+    <div
+      className="control-card"
+      aria-label="Illustrative Mecharoon control loop"
+    >
+      <div className="control-card-topline">
+        <span className="control-card-label">
+          <BrandMark variant="reverse" micro />
+          Live control loop
         </span>
+        <span className="illustrative-label">Illustrative · no funds</span>
       </div>
 
-      <div className="budget-header">
+      <div className="work-order-heading">
         <div>
-          <span className="mono-label">PARENT AUTHORITY</span>
-          <strong>Research Agent</strong>
+          <span>Work order</span>
+          <strong>Verify pricing extraction</strong>
         </div>
-        <div className="budget-value">
-          <span>Budget</span>
-          <strong>$20.00</strong>
+        <div>
+          <span>Job budget</span>
+          <strong>$5.00</strong>
         </div>
       </div>
 
-      <div className="stage-track" aria-label={`Current stage: ${stages[currentStage]}`}>
-        <span
-          className="stage-progress"
-          style={{
-            transform: `scaleX(${currentStage / (stages.length - 1)})`,
-          }}
-          aria-hidden="true"
-        />
-        {stages.map((stage, index) => (
-          <span
-            className={[
-              'stage-node',
-              index <= currentStage ? 'is-complete' : '',
-              index === currentStage ? 'is-current' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            key={stage}
-          >
-            <i />
-            <b>{stage}</b>
+      <div className="authority-path" aria-label="Delegated authority path">
+        <div>
+          <span>Root</span>
+          <strong>$20</strong>
+        </div>
+        <i aria-hidden="true" />
+        <div>
+          <span>Child cap</span>
+          <strong>$15</strong>
+        </div>
+        <i aria-hidden="true" />
+        <div className={reservationActive ? 'is-reserved' : ''}>
+          <span>Reserved</span>
+          <strong>{step.reserved}</strong>
+        </div>
+      </div>
+
+      <div
+        className="current-control-state"
+        aria-live={isRunning ? 'off' : 'polite'}
+      >
+        <div className="state-meta">
+          <span>
+            {String(currentStepIndex + 1).padStart(2, '0')} /{' '}
+            {String(HOSTED_WALKTHROUGH_STEPS.length).padStart(2, '0')}
           </span>
-        ))}
+          <b className={getStatusTone(step)}>{step.status}</b>
+        </div>
+        <motion.div
+          className="state-copy"
+          key={step.code}
+          initial={motionEnabled ? {opacity: 0.35, y: 5} : false}
+          animate={{opacity: 1, y: 0}}
+          transition={
+            motionEnabled
+              ? {duration: 0.28, ease: [0.22, 1, 0.36, 1]}
+              : {duration: 0}
+          }
+        >
+          <span>{step.code.replaceAll('_', ' ')}</span>
+          <h2>{presentation.title}</h2>
+          <p>{step.detail}</p>
+        </motion.div>
       </div>
 
-      <div className="agent-list" aria-label="Delegated agent tasks">
-        {agents.map((agent, index) => {
-          const verdict = evaluated ? agent.verdict : 'PENDING';
-          const settlement = reconciled ? agent.settlement : currentStage >= 1 ? 'Reserved' : 'Waiting';
-          return (
+      <dl className="control-metrics">
+        <div>
+          <dt>Authority</dt>
+          <dd>{step.authority}</dd>
+        </div>
+        <div>
+          <dt>Reserved</dt>
+          <dd className={reservationActive ? 'metric-reserved' : ''}>
+            {step.reserved}
+          </dd>
+        </div>
+        <div>
+          <dt>Settlement</dt>
+          <dd>{step.settlement}</dd>
+        </div>
+        <div>
+          <dt>Next limit</dt>
+          <dd>{step.next_limit}</dd>
+        </div>
+      </dl>
+
+      <div className="loop-progress">
+        <div className="loop-track" aria-hidden="true">
+          <motion.span
+            className="loop-progress-fill"
+            animate={{scaleX: progress}}
+            transition={
+              motionEnabled
+                ? {duration: 0.48, ease: [0.22, 1, 0.36, 1]}
+                : {duration: 0}
+            }
+          />
+        </div>
+        <div className="loop-steps" aria-label="Control loop steps">
+          {HOSTED_WALKTHROUGH_STEPS.map((item, index) => (
             <button
-              className={selectedAgent === index ? 'agent-row is-selected' : 'agent-row'}
               type="button"
-              key={agent.id}
-              onClick={() => onSelectAgent(index)}
-              aria-pressed={selectedAgent === index}
+              className={[
+                'loop-step',
+                index <= currentStepIndex ? 'is-complete' : '',
+                index <= currentStepIndex ? getStatusTone(item) : '',
+                index === currentStepIndex ? 'is-current' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              onClick={() => onSelectStep(index)}
+              aria-label={`Inspect ${stepPresentation[item.code].shortLabel}`}
+              aria-pressed={index === currentStepIndex}
+              key={item.code}
             >
-              <span className="agent-identity">
-                <span className={`verdict-dot verdict-${verdict.toLowerCase()}`} />
-                <span>
-                  <strong>{agent.name}</strong>
-                  <small>{settlement}</small>
-                </span>
-              </span>
-              <span className={`verdict verdict-${verdict.toLowerCase()}`}>{verdict}</span>
-              <strong className="agent-amount">{agent.amount}</strong>
+              <i aria-hidden="true" />
+              <span>{stepPresentation[item.code].shortLabel}</span>
             </button>
-          );
-        })}
-      </div>
-
-      <div className="agent-detail" aria-live="polite">
-        <span>{selected.name}</span>
-        <p>{selected.detail}</p>
-      </div>
-
-      <div className="transaction-summary">
-        <div>
-          <span>Settled onchain</span>
-          <strong>{reconciled ? '$2.00' : 'Pending'}</strong>
-        </div>
-        <div>
-          <span>Open reservation</span>
-          <strong>{reconciled ? '$4.00' : 'Pending'}</strong>
-        </div>
-        <div>
-          <span>Released</span>
-          <strong>{reconciled ? '$0.00' : 'Pending'}</strong>
-        </div>
-        <div className="available-row">
-          <span>Available</span>
-          <strong>$14.00</strong>
+          ))}
         </div>
       </div>
 
-      <div className="receipt-strip">
-        <div>
-          <span className="mono-label">RECEIPT</span>
-          <strong>{currentStage >= 6 ? 'demo_01' : 'pending'}</strong>
-        </div>
-        <div>
-          <span className="mono-label">ONCHAIN FINALITY</span>
-          <strong>simulated</strong>
-        </div>
-        <button className="replay-button" type="button" onClick={onRun}>
-          {isRunning
-            ? 'Pause flow'
-            : currentStage === stages.length - 1
-              ? 'Replay flow'
-              : 'Resume flow'}
+      <div className="control-card-footer">
+        <span>
+          Auto-replay {isRunning ? 'running' : 'paused'}
+        </span>
+        <button type="button" onClick={onToggle}>
+          {reduceMotion
+            ? currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1
+              ? 'Start over'
+              : 'Next step'
+            : isRunning
+              ? 'Pause'
+              : currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1
+                ? 'Replay'
+                : 'Resume'}
         </button>
       </div>
-
-      <p className="transaction-note">
-        V0 evaluates work offchain before approved value settles through a simulated onchain adapter.
-      </p>
     </div>
   );
 }
 
-function TaskTree() {
+function FinalReceipt() {
   return (
-    <div className="task-tree" aria-label="Shared ancestor budget task tree">
-      <div className="tree-parent">
-        <span className="tree-kicker">SHARED ANCESTOR LIMIT</span>
+    <div className="final-receipt" aria-label="Illustrative FinalReceipt">
+      <div className="final-receipt-header">
         <div>
-          <strong>Parent Research Agent</strong>
-          <b>$20.00</b>
+          <BrandMark variant="reverse" micro />
+          <span>FinalReceipt</span>
         </div>
-        <span className="budget-bar">
-          <i style={{width: '30%'}} />
-        </span>
-        <small>$6 reserved across descendants · $14 not yet reserved</small>
+        <span>receipt_01</span>
       </div>
 
-      <div className="tree-connector" aria-hidden="true">
-        <span />
+      <div className="receipt-verdict">
+        <span>Outcome</span>
+        <strong>PASS · FINAL</strong>
       </div>
 
-      <div className="tree-children">
-        {agents.map((agent) => (
-          <div className="tree-child" key={agent.id}>
-            <span className={`tree-status verdict-${agent.verdict.toLowerCase()}`}>{agent.verdict}</span>
-            <strong>{agent.name}</strong>
-            <div>
-              <span>Reserved</span>
-              <b>{agent.amount}</b>
-            </div>
-          </div>
-        ))}
-      </div>
+      <dl>
+        <div>
+          <dt>Authority path</dt>
+          <dd>root / child / job</dd>
+        </div>
+        <div>
+          <dt>Work order</dt>
+          <dd>pricing-extraction-01</dd>
+        </div>
+        <div>
+          <dt>Accepted amount</dt>
+          <dd>$5.00</dd>
+        </div>
+        <div>
+          <dt>Settlement</dt>
+          <dd>simulated confirmed</dd>
+        </div>
+        <div>
+          <dt>Previous limit</dt>
+          <dd>$5.00</dd>
+        </div>
+        <div className="receipt-limit-row">
+          <dt>Next job limit</dt>
+          <dd>$10.00</dd>
+        </div>
+      </dl>
 
-      <div className="blocked-retry">
-        <span>RETRY 02</span>
-        <strong>Blocked before spend</strong>
-        <small>Ancestor-aware reservation sees the same shared limit.</small>
-      </div>
-    </div>
-  );
-}
-
-function ArchitectureLoop() {
-  return (
-    <div className="architecture-loop">
-      <div className="loop-center" aria-hidden="true">
-        <span>CLOSED</span>
-        <strong>LOOP</strong>
-      </div>
-      {modules.map((item) => {
-        return (
-          <article className="module" key={item.name}>
-            <div className="module-heading">
-              <span>{item.number}</span>
-            </div>
-            <h3>{item.name}</h3>
-            <p>{item.description}</p>
-          </article>
-        );
-      })}
+      <p>
+        One append-only record links the authorizer, accepted work, observed
+        payment state, and the agent&apos;s next limit.
+      </p>
     </div>
   );
 }
 
 export default function Home() {
   const reduceMotion = useReducedMotion();
-  const [currentStage, setCurrentStage] = useState(stages.length - 1);
+  const hasHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  );
+  const prefersReducedMotion = hasHydrated && reduceMotion === true;
+  const motionEnabled = hasHydrated && reduceMotion === false;
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState(0);
-  const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [pageIsVisible, setPageIsVisible] = useState(true);
 
   useEffect(() => {
@@ -354,70 +388,69 @@ export default function Home() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener(
+        'visibilitychange',
+        handleVisibilityChange,
+      );
     };
   }, []);
 
   useEffect(() => {
-    if (hasAutoPlayed || reduceMotion !== false || !pageIsVisible) return;
+    if (reduceMotion !== false || !pageIsVisible || hasStarted) return;
 
     const timer = window.setTimeout(() => {
-      setHasAutoPlayed(true);
-      setSelectedAgent(0);
-      setCurrentStage(0);
+      setHasStarted(true);
       setIsRunning(true);
-    }, HERO_AUTOPLAY_DELAY_MS);
+    }, AUTOPLAY_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [hasAutoPlayed, pageIsVisible, reduceMotion]);
+  }, [hasStarted, pageIsVisible, reduceMotion]);
 
   useEffect(() => {
     if (!isRunning || !pageIsVisible || reduceMotion !== false) return;
 
-    const reachedReceipt = currentStage >= stages.length - 1;
-
-    const timer = window.setTimeout(() => {
-      if (reachedReceipt) {
-        setSelectedAgent(0);
-        setCurrentStage(0);
-        return;
-      }
-
-      setCurrentStage(currentStage + 1);
-    }, reachedReceipt ? HERO_LOOP_DWELL_MS : HERO_STAGE_DURATION_MS);
+    const atEnd =
+      currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1;
+    const timer = window.setTimeout(
+      () => {
+        setCurrentStepIndex((current) =>
+          current === HOSTED_WALKTHROUGH_STEPS.length - 1
+            ? 0
+            : current + 1,
+        );
+      },
+      atEnd ? LOOP_DWELL_MS : STEP_DURATION_MS,
+    );
 
     return () => window.clearTimeout(timer);
-  }, [currentStage, isRunning, pageIsVisible, reduceMotion]);
+  }, [currentStepIndex, isRunning, pageIsVisible, reduceMotion]);
 
-  const toggleDemo = () => {
-    setHasAutoPlayed(true);
+  const selectStep = (index: number) => {
+    setHasStarted(true);
+    setCurrentStepIndex(index);
+    setIsRunning(false);
+  };
 
-    if (isRunning) {
+  const toggleLoop = () => {
+    setHasStarted(true);
+
+    if (prefersReducedMotion) {
+      setCurrentStepIndex((current) =>
+        current === HOSTED_WALKTHROUGH_STEPS.length - 1
+          ? 0
+          : current + 1,
+      );
       setIsRunning(false);
       return;
     }
 
-    setSelectedAgent(0);
-    if (reduceMotion !== false) {
-      setCurrentStage(stages.length - 1);
-      setIsRunning(false);
-    } else {
-      if (currentStage >= stages.length - 1) {
-        setCurrentStage(0);
-      }
-      setIsRunning(true);
+    if (
+      !isRunning &&
+      currentStepIndex === HOSTED_WALKTHROUGH_STEPS.length - 1
+    ) {
+      setCurrentStepIndex(0);
     }
-  };
-
-  const inspectStage = (index: number) => {
-    setHasAutoPlayed(true);
-    setIsRunning(false);
-    setCurrentStage(index);
-  };
-
-  const inspectAgent = (index: number) => {
-    setHasAutoPlayed(true);
-    setSelectedAgent(index);
+    setIsRunning((running) => !running);
   };
 
   return (
@@ -425,378 +458,194 @@ export default function Home() {
       <Header />
 
       <main>
-        <section className="hero shell" id="control">
+        <section className="hero shell">
           <div className="hero-copy hero-enter">
-            <span className="hero-kicker">VERIFIED SETTLEMENT FOR AGENT WORK</span>
+            <span className="hero-kicker">
+              Verified settlement for paid agent work
+            </span>
             <h1>
               Verify agent work.
               <br />
-              {' '}Then pay.
+              Then pay.
             </h1>
             <p className="hero-subcopy">
-              Mecharoon verifies agent work offchain and authorizes only
-              approved value for onchain settlement. Finalized receipts set
-              future limits and routing. This MVP uses a simulated adapter; no
-              real funds move.
+              Set the job, cap the budget, and define what counts as done.
+              Mecharoon reserves the budget, checks the result, and approves
+              payment only when the work passes.
             </p>
             <div className="hero-actions">
-              <a className="button button-accent" href="/demo">
-                View walkthrough
+              <a className="button button-accent" href="#flow">
+                See the control loop
               </a>
-              <a
-                className="button button-outline"
-                href="#pilot"
-              >
-                Join pilot
+              <a className="button button-outline" href="#pilot">
+                Join the pilot
               </a>
+            </div>
+            <div className="hero-trust" aria-label="Current product boundary">
+              <span>PostgreSQL-backed sandbox</span>
+              <span>Simulated settlement</span>
+              <span>No real funds</span>
             </div>
           </div>
 
           <div className="hero-product hero-enter-delayed">
-            <TransactionPanel
-              currentStage={currentStage}
+            <ControlLoop
+              currentStepIndex={currentStepIndex}
               isRunning={isRunning}
-              onRun={toggleDemo}
-              selectedAgent={selectedAgent}
-              onSelectAgent={inspectAgent}
+              reduceMotion={prefersReducedMotion}
+              motionEnabled={motionEnabled}
+              onSelectStep={selectStep}
+              onToggle={toggleLoop}
             />
           </div>
         </section>
 
-        <section className="section section-rule shell">
-          <div className="section-heading problem-heading">
-            <h2>A wallet cap is not a task-tree budget.</h2>
-            <p>
-              Child agents, retries, and late settlements can all draw from one limit. Mecharoon reserves across
-              the entire authority tree.
-            </p>
-          </div>
-
-          <div className="problem-layout">
-            <TaskTree />
-            <ol className="problem-notes">
-              <li>
-                <span>01</span>
-                <div>
-                  <strong>Shared budget</strong>
-                  <p>Every child draws against the same ancestor limits.</p>
-                </div>
-              </li>
-              <li>
-                <span>02</span>
-                <div>
-                  <strong>External uncertainty</strong>
-                  <p>A timeout is not a failed payment. Unknown states must be quarantined and reconciled.</p>
-                </div>
-              </li>
-              <li>
-                <span>03</span>
-                <div>
-                  <strong>Missing accountability</strong>
-                  <p>Payment logs rarely explain which authority, task, artifact, or accepted result caused the spend.</p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </section>
-
-        <section className="section demo-section" id="demo">
-          <div className="shell">
-            <div className="section-heading demo-heading">
-              <h2>Verify the work before approved value settles.</h2>
+        <section className="story-section section-rule" id="flow">
+          <div className="shell story-layout">
+            <div className="story-heading">
+              <span className="section-kicker">One closed loop</span>
+              <h2>A payment rail sees money. Mecharoon sees the job.</h2>
               <p>
-                An external agent accepts a bounded work order. Mecharoon reserves its budget, records submitted
-                evidence and the verdict, then settles only the approved outcome.
+                The financial decision stays attached to the work from
+                delegated authority through final settlement.
               </p>
             </div>
 
-            <div className="demo-grid">
-              <div className="flow-inspector">
-                <div className="flow-tabs" role="tablist" aria-label="Transaction stages">
-                  {stages.map((stage, index) => (
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={currentStage === index}
-                      className={currentStage === index ? 'flow-tab is-current' : 'flow-tab'}
-                      onClick={() => inspectStage(index)}
-                      key={stage}
-                    >
-                      <span>{String(index + 1).padStart(2, '0')}</span>
-                      {stage}
-                    </button>
-                  ))}
-                </div>
-
-                <div
-                  className="flow-copy"
-                  aria-live={isRunning ? 'off' : 'polite'}
-                >
-                  <span className="mono-label">NOW INSPECTING · {stages[currentStage].toUpperCase()}</span>
-                  {currentStage === 0 && (
-                    <>
-                      <h3>Delegate bounded authority.</h3>
-                      <p>The parent can create child tasks, but it cannot create more economic authority than it received.</p>
-                    </>
-                  )}
-                  {currentStage === 1 && (
-                    <>
-                      <h3>Reserve through every ancestor.</h3>
-                      <p>$2, $3, and $1 are reserved before execution. A retry sees the same shared limit.</p>
-                    </>
-                  )}
-                  {currentStage === 2 && (
-                    <>
-                      <h3>Execute against one work order.</h3>
-                      <p>Each child task carries its authority path, idempotency key, expected artifact, and payment intent.</p>
-                    </>
-                  )}
-                  {currentStage === 3 && (
-                    <>
-                      <h3>Evaluate the committed evidence.</h3>
-                      <p>Search passes; extraction and verification need revised evidence under the declared evaluator policy.</p>
-                    </>
-                  )}
-                  {currentStage === 4 && (
-                    <>
-                      <h3>Settle only the approved outcome.</h3>
-                      <p>A reservation-bound instruction sends the accepted $2 to the simulated onchain adapter.</p>
-                    </>
-                  )}
-                  {currentStage === 5 && (
-                    <>
-                      <h3>Reconcile observed onchain state.</h3>
-                      <p>Confirm $2 and keep $4 reserved for revision. Unknown states are quarantined, not retried blindly.</p>
-                    </>
-                  )}
-                  {currentStage === 6 && (
-                    <>
-                      <h3>Close with one work receipt.</h3>
-                      <p>The receipt links authority, task, artifact, verdict, cost, and observed onchain settlement state.</p>
-                    </>
-                  )}
-                </div>
-
-                <button className="button button-dark run-button" type="button" onClick={toggleDemo}>
-                  {isRunning
-                    ? 'Pause control flow'
-                    : currentStage === stages.length - 1
-                      ? 'Replay the full sequence'
-                      : 'Resume control flow'}
-                </button>
-              </div>
-
-              <div className="work-receipt">
-                <div className="receipt-header">
-                  <div>
-                    <BrandMark variant="reverse" micro />
-                    <span>WORK RECEIPT</span>
-                  </div>
-                  <span className="receipt-id">demo_01</span>
-                </div>
-                <div className="receipt-state">
-                  <span>LOCAL STATE</span>
-                  <strong>{currentStage >= 6 ? 'CLOSED' : stages[currentStage].toUpperCase()}</strong>
-                </div>
-                <dl>
-                  <div>
-                    <dt>Authority</dt>
-                    <dd>parent/research/*</dd>
-                  </div>
-                  <div>
-                    <dt>Budget</dt>
-                    <dd>$20.00</dd>
-                  </div>
-                  <div>
-                    <dt>Reserved</dt>
-                    <dd>{currentStage >= 1 ? '$6.00' : '$0.00'}</dd>
-                  </div>
-                  <div>
-                    <dt>Settled onchain</dt>
-                    <dd>{currentStage >= 5 ? '$2.00' : 'Pending'}</dd>
-                  </div>
-                  <div>
-                    <dt>Open</dt>
-                    <dd>{currentStage >= 5 ? '$4.00' : 'Pending'}</dd>
-                  </div>
-                  <div>
-                    <dt>Released</dt>
-                    <dd>{currentStage >= 5 ? '$0.00' : 'Pending'}</dd>
-                  </div>
-                  <div>
-                    <dt>Onchain finality</dt>
-                    <dd>simulated</dd>
-                  </div>
-                </dl>
-                <div className="receipt-verdicts">
-                  {agents.map((agent) => (
-                    <span key={agent.id}>
-                      <i className={`verdict-${currentStage >= 3 ? agent.verdict.toLowerCase() : 'pending'}`} />
-                      {agent.name.replace(' Agent', '')}
-                      <b>{currentStage >= 3 ? agent.verdict : 'PENDING'}</b>
-                    </span>
-                  ))}
-                </div>
-                <p>Illustrative only · Adapter finality is simulated · No customer funds are held by Mecharoon</p>
-              </div>
+            <div className="story-sequence">
+              <article>
+                <span>Before work</span>
+                <h3>Define exactly what the agent may do.</h3>
+                <p>
+                  Bind the work order to an authority path, a budget cap, an
+                  idempotency key, and an acceptance rule.
+                </p>
+                <strong>Authority → budget → acceptance rule</strong>
+              </article>
+              <article>
+                <span>While working</span>
+                <h3>Keep exposure reserved until the result is known.</h3>
+                <p>
+                  A revision keeps the budget open. A failed or uncertain
+                  settlement cannot silently become spendable again.
+                </p>
+                <strong>Reserve → evidence → PASS or REVISE</strong>
+              </article>
+              <article>
+                <span>After work</span>
+                <h3>Turn finality into the next authority decision.</h3>
+                <p>
+                  The FinalReceipt connects accepted work to observed payment
+                  state and raises or lowers the contextual limit for the next
+                  job.
+                </p>
+                <strong>Reconcile → receipt → next limit</strong>
+              </article>
             </div>
           </div>
         </section>
 
-        <section className="section section-rule shell" id="architecture">
-          <div className="section-heading architecture-heading">
-            <h2>Four modules. One closed loop.</h2>
-            <p>
-              Authority becomes reservation. Work becomes a verdict. External payment state returns as a
-              finance-readable receipt.
-            </p>
-          </div>
-
-          <ArchitectureLoop />
-
-          <div className="rail-boundary">
-            <div>
-              <h3>Control above the rails.</h3>
+        <section className="proof-section" id="proof">
+          <div className="shell proof-grid">
+            <div className="proof-copy">
+              <span className="section-kicker">Local failure proof</span>
+              <h2>The receipt exists only after the economic truth is known.</h2>
               <p>
-                V0 keeps authority, work orders, evidence, evaluation, receipts, and contextual reputation offchain.
-                Only approved value settlement is submitted to the onchain adapter.
+                The current MVP exercises the failures that a happy-path
+                payment demo skips: concurrent reservation, duplicate
+                requests, revision, uncertain settlement, and premature
+                reputation.
               </p>
-            </div>
-            <div className="adapter-targets">
-              <span className="mono-label">FUTURE RAIL ADAPTERS · NOT PART OF V0</span>
-              <div>
-                <span>x402</span>
-                <span>API credits</span>
-                <span>Wallets</span>
-                <span>Card authorizations</span>
-                <span>Invoices</span>
+
+              <div className="proof-facts">
+                {proofFacts.map((fact) => (
+                  <div key={fact.value}>
+                    <strong>{fact.value}</strong>
+                    <span>{fact.label}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-          </div>
 
-          <div className="api-surface">
-            <div className="api-surface-copy">
-              <span className="mono-label">HOSTED WALKTHROUGH</span>
-              <h3>Deterministic answers for the next agent action.</h3>
-              <p>
-                Platforms inspect authority and reserve a work budget. A
-                separate evaluator commits normalized evidence; a settlement
-                operator reconciles the adapter result. Every response returns
-                a stable status, reason code, and valid next actions.
-              </p>
-              <a className="button button-dark" href="/demo">
-                Open walkthrough
+              <a
+                className="text-link"
+                href="https://github.com/jh1nresh/mecharoon"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Inspect the repository <span aria-hidden="true">↗</span>
               </a>
             </div>
-            <div
-              className="api-flow"
-              aria-label="Mecharoon walkthrough API flow"
-            >
-              {[
-                'getAuthorityExposure',
-                'createWorkOrder',
-                'evaluateSubmission',
-                'executeSettlement',
-                'reconcileSettlement',
-                'getFinalReceipt',
-              ].map((step, index) => (
-                <span key={step}>
-                  <b>{String(index + 1).padStart(2, '0')}</b>
-                  <code>{step}</code>
-                </span>
-              ))}
-            </div>
+
+            <FinalReceipt />
+          </div>
+
+          <div className="shell proof-boundary">
+            <span>PostgreSQL-backed test path</span>
+            <span>Simulated settlement adapter</span>
+            <span>No customer funds held</span>
           </div>
         </section>
 
-        <section className="section audience-section">
-          <div className="shell">
-            <div className="section-heading audience-heading">
-              <h2>One transaction truth for everyone who owns the risk.</h2>
-            </div>
-            <div className="audience-list">
-              <article>
-                <span>01</span>
-                <h3>Agent platforms</h3>
-                <p>Add paid agent workflows without rebuilding budget and recovery logic inside every runtime.</p>
-              </article>
-              <article>
-                <span>02</span>
-                <h3>Finance and FinOps</h3>
-                <p>Trace each spend to its authorizer, work order, accepted result, and external payment state.</p>
-              </article>
-              <article>
-                <span>03</span>
-                <h3>Security and reliability</h3>
-                <p>Stop new descendant spend after revocation and quarantine uncertain payments instead of silently retrying.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section className="section benchmark-section shell" id="benchmark">
-          <div className="benchmark-copy">
-            <h2>Proof before production.</h2>
-            <p>
-              The local PostgreSQL proof tests the failures that simple demos
-              avoid: concurrent reservation, duplicate requests, unknown
-              settlement, mismatched reconciliation, and premature reputation.
-            </p>
-            <p className="benchmark-truth">
-              These are local sandbox results with a simulated adapter, not
-              production or real-money evidence.
-            </p>
+        <section className="boundary-section section-rule" id="boundary">
+          <div className="shell boundary-heading">
+            <span className="section-kicker">Rail neutral by design</span>
+            <h2>Control the work offchain. Keep settlement rail-neutral.</h2>
           </div>
 
-          <div className="benchmark-receipt">
-            <div className="benchmark-header">
-              <div>
-                <BrandMark micro />
-                <span>LOCAL SANDBOX RESULTS</span>
+          <div className="shell boundary-grid">
+            <article>
+              <span>Mecharoon owns the decision</span>
+              <h3>Authority, evidence, verdict, and reputation stay above the rail.</h3>
+              <p>
+                Your platform remains the system of engagement. Mecharoon
+                returns deterministic next actions and a finance-readable
+                receipt.
+              </p>
+              <ul>
+                <li>Delegated and revocable limits</li>
+                <li>Atomic reservation across ancestors</li>
+                <li>Committed evidence and acceptance verdict</li>
+                <li>FinalReceipt and contextual next limit</li>
+              </ul>
+            </article>
+
+            <article>
+              <span>The adapter owns movement</span>
+              <h3>Only approved value is eligible to cross into a settlement rail.</h3>
+              <p>
+                The MVP uses a simulated adapter. The same state machine can
+                later observe wallets, API credits, cards, or invoices without
+                turning Mecharoon into a payment rail.
+              </p>
+              <div className="rail-line" aria-label="Potential settlement rails">
+                <span>Wallets</span>
+                <span>API credits</span>
+                <span>Cards</span>
+                <span>Invoices</span>
               </div>
-              <b>PASSED</b>
-            </div>
-            <div className="benchmark-meta">
-              <span>suite</span>
-              <strong>ledger_failure_matrix_v0</strong>
-              <span>status</span>
-              <strong>VERIFIED LOCALLY</strong>
-            </div>
-            <ul>
-              {benchmarkTargets.map((target, index) => (
-                <li key={target}>
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                  <strong>{target}</strong>
-                  <b>PASS</b>
-                </li>
-              ))}
-            </ul>
-            <div className="benchmark-footer">
-              <span>Result hash</span>
-              <strong>npm test · verified suite</strong>
-            </div>
+            </article>
           </div>
         </section>
 
-        <section className="final-cta" id="pilot">
-          <div className="shell final-cta-inner">
+        <section className="pilot-section" id="pilot">
+          <div className="shell pilot-inner">
             <div>
+              <span className="section-kicker">Design partner pilot</span>
               <h2>Bring one paid agent workflow.</h2>
               <p>
-                We&apos;ll map its authority tree, rail states, and finance-readable receipt before it touches
-                production spend.
+                We&apos;ll map who can authorize it, what counts as done, how
+                much can be reserved, and which receipt your finance team needs.
               </p>
             </div>
-            <div className="final-actions">
+            <div className="pilot-actions">
               <a
                 className="button button-accent"
                 href="https://github.com/jh1nresh/mecharoon/issues/new?title=Mecharoon%20pilot"
                 target="_blank"
                 rel="noreferrer"
               >
-                Join pilot
+                Request pilot access
               </a>
-              <span>No custody. No card issuing. No new payment rail.</span>
+              <span>Single workflow · simulated funds · direct founder support</span>
             </div>
           </div>
         </section>
@@ -808,14 +657,16 @@ export default function Home() {
             <BrandMark />
             <BrandWordmark />
           </a>
-          <p>Financial control infrastructure for agentic work.</p>
+          <p>The financial control infrastructure for agentic work.</p>
           <div>
-            <a href="https://github.com/jh1nresh/mecharoon" target="_blank" rel="noreferrer">
+            <a
+              href="https://github.com/jh1nresh/mecharoon"
+              target="_blank"
+              rel="noreferrer"
+            >
               GitHub
             </a>
-            <a href="#control">
-              Control model
-            </a>
+            <a href="#flow">Control loop</a>
           </div>
         </div>
       </footer>
