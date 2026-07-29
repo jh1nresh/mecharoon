@@ -5,6 +5,7 @@ import {useEffect, useState} from 'react';
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
 import {
   ArrowRightCircle,
+  Check,
   Fingerprint,
   LockKeyhole,
   Menu,
@@ -36,18 +37,18 @@ const fadeUp = {
   }),
 };
 
-const proofFacts = [
+const developerProofFacts = [
   {
     value: '50',
-    label: 'concurrent child attempts stay inside ancestor limits',
+    label: 'concurrent attempts stayed inside the ancestor limit',
   },
   {
     value: '1',
-    label: 'reservation survives 50 identical idempotency requests',
+    label: 'reservation survived 50 identical idempotency requests',
   },
   {
     value: '0',
-    label: 'receipts are issued before settlement finality',
+    label: 'receipts existed before settlement finality',
   },
 ];
 
@@ -248,54 +249,360 @@ function Header() {
   );
 }
 
-function FinalReceipt() {
+function DeveloperProofConsole({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
   return (
-    <div className="final-receipt" aria-label="Illustrative FinalReceipt">
-      <div className="final-receipt-header">
-        <div>
-          <BrandMark variant="reverse" micro />
-          <span>FinalReceipt</span>
+    <motion.div
+      className="developer-console"
+      aria-label="Illustrative API request and reconciled response"
+      initial={reducedMotion ? false : {opacity: 0, y: 36}}
+      whileInView={{opacity: 1, y: 0}}
+      viewport={{once: true, amount: 0.28}}
+      transition={{duration: 0.72, ease: [0.22, 1, 0.36, 1]}}
+    >
+      <header className="developer-console-head">
+        <span>MECHAROON / SANDBOX</span>
+        <span>SIMULATED SETTLEMENT · NO FUNDS MOVED</span>
+      </header>
+
+      <div className="developer-console-request">
+        <div className="developer-console-label">
+          <span>
+            <strong>POST</strong> /v0/work-orders
+          </span>
+          <span>REQUEST</span>
         </div>
-        <span>receipt_01</span>
+        <pre>{`{
+  "job": "Verify pricing research",
+  "budget": 500,
+  "authority_limit": 1500,
+  "acceptance_rule": {
+    "pricing_facts": 3,
+    "citations_required": true
+  }
+}`}</pre>
       </div>
 
-      <div className="receipt-verdict">
-        <span>Outcome</span>
-        <strong>PASS · FINAL</strong>
+      <div className="developer-console-response">
+        <div className="developer-console-result">
+          <div className="developer-console-label">
+            <span className="developer-console-pass">201 · RECONCILED</span>
+            <span>RESPONSE</span>
+          </div>
+
+          <dl>
+            <div>
+              <dt>Work order</dt>
+              <dd>W-0187</dd>
+            </div>
+            <div>
+              <dt>Authority</dt>
+              <dd>A-0187</dd>
+            </div>
+            <div>
+              <dt>Reserved</dt>
+              <dd>$5.00</dd>
+            </div>
+            <div>
+              <dt>Evidence</dt>
+              <dd className="developer-console-pass">PASS</dd>
+            </div>
+            <div>
+              <dt>Authorized</dt>
+              <dd>$5.00</dd>
+            </div>
+            <div>
+              <dt>Next limit</dt>
+              <dd>$10.00</dd>
+            </div>
+          </dl>
+
+          <div className="developer-console-foot">
+            <span>RULE HASH · 7D9A…31F2</span>
+            <span>IDEMPOTENT · AUDITABLE</span>
+          </div>
+        </div>
+
+        <aside className="developer-console-receipt">
+          <div className="developer-receipt-mark">
+            <Check aria-hidden="true" />
+          </div>
+          <span>FINAL RECEIPT</span>
+          <strong>R-0187</strong>
+          <p>settlement reconciled</p>
+          <p>outcome committed</p>
+        </aside>
       </div>
+    </motion.div>
+  );
+}
 
-      <dl>
-        <div>
-          <dt>Authority path</dt>
-          <dd>root / child / job</dd>
-        </div>
-        <div>
-          <dt>Work order</dt>
-          <dd>pricing-extraction-01</dd>
-        </div>
-        <div>
-          <dt>Accepted amount</dt>
-          <dd>$5.00</dd>
-        </div>
-        <div>
-          <dt>Settlement</dt>
-          <dd>simulated confirmed</dd>
-        </div>
-        <div>
-          <dt>Previous limit</dt>
-          <dd>$5.00</dd>
-        </div>
-        <div className="receipt-limit-row">
-          <dt>Next job limit</dt>
-          <dd>$10.00</dd>
-        </div>
-      </dl>
+function BoundaryDiagram({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
+  const pathInitial = reducedMotion
+    ? false
+    : {pathLength: 0, opacity: 0};
 
-      <p>
-        One append-only record links the authorizer, accepted work, observed
-        payment state, and the agent&apos;s next limit.
-      </p>
+  return (
+    <motion.div
+      className="boundary-art"
+      aria-hidden="true"
+      initial={reducedMotion ? false : {opacity: 0, x: 48}}
+      whileInView={{opacity: 1, x: 0}}
+      viewport={{once: true, amount: 0.32}}
+      transition={{duration: 0.78, ease: [0.22, 1, 0.36, 1]}}
+    >
+      <svg viewBox="0 0 760 640" role="presentation">
+        <motion.path
+          className="boundary-band boundary-band-soft"
+          strokeWidth="58"
+          d="M 664 82 C 478 44, 282 146, 252 332 C 230 472, 310 570, 450 606"
+          initial={pathInitial}
+          whileInView={{pathLength: 1, opacity: 1}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{duration: 1, ease: [0.22, 1, 0.36, 1]}}
+        />
+        <motion.path
+          className="boundary-band"
+          strokeWidth="28"
+          d="M 650 104 C 502 76, 340 154, 310 326 C 288 446, 360 526, 470 552"
+          initial={pathInitial}
+          whileInView={{pathLength: 1, opacity: 1}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{
+            delay: reducedMotion ? 0 : 0.14,
+            duration: 0.9,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        />
+        <motion.path
+          className="boundary-band"
+          strokeWidth="15"
+          d="M 625 166 C 510 144, 400 212, 386 334 C 376 420, 420 470, 500 488"
+          initial={pathInitial}
+          whileInView={{pathLength: 1, opacity: 1}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{
+            delay: reducedMotion ? 0 : 0.28,
+            duration: 0.82,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        />
+        <motion.path
+          className="boundary-reserve"
+          strokeWidth="15"
+          d="M 386 334 C 381 370, 387 398, 404 420"
+          initial={pathInitial}
+          whileInView={{pathLength: 1, opacity: 1}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{
+            delay: reducedMotion ? 0 : 0.54,
+            duration: 0.42,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        />
+        <path
+          className="boundary-band boundary-band-route"
+          strokeWidth="2"
+          d="M 111 526 C 292 524, 448 514, 598 450"
+        />
+        <motion.circle
+          className="boundary-transaction"
+          cx="404"
+          cy="420"
+          r="16"
+          initial={reducedMotion ? false : {scale: 0, opacity: 0}}
+          whileInView={{scale: 1, opacity: 1}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{
+            delay: reducedMotion ? 0 : 0.72,
+            duration: 0.38,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        />
+        <text className="boundary-route-label" x="532" y="140">
+          DELEGATE
+        </text>
+        <text className="boundary-route-label" x="302" y="372">
+          RESERVE
+        </text>
+        <text className="boundary-route-label" x="430" y="444">
+          RECONCILE
+        </text>
+      </svg>
+    </motion.div>
+  );
+}
+
+function BoundaryReceipt({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
+  return (
+    <motion.div
+      className="boundary-receipt"
+      aria-label="Illustrative final receipt"
+      initial={reducedMotion ? false : {opacity: 0, y: 44}}
+      whileInView={{opacity: 1, y: 0}}
+      viewport={{once: true, amount: 0.3}}
+      transition={{
+        delay: reducedMotion ? 0 : 0.28,
+        duration: 0.7,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      <div className="boundary-receipt-lead">
+        <span>ILLUSTRATIVE SANDBOX · NO FUNDS MOVED</span>
+        <strong>
+          FinalReceipt <span>R-0187</span>
+        </strong>
+      </div>
+      <div>
+        <span>WORK ORDER</span>
+        <strong>W-0187</strong>
+      </div>
+      <div>
+        <span>DELEGATED LIMIT</span>
+        <strong>$15.00</strong>
+      </div>
+      <div className="boundary-receipt-reserved">
+        <span>RESERVED / PASSED</span>
+        <strong>$5.00 · PASS</strong>
+      </div>
+      <div>
+        <span>SETTLEMENT</span>
+        <strong>RECONCILED</strong>
+      </div>
+      <div>
+        <span>OUTCOME</span>
+        <strong className="boundary-receipt-committed">
+          <i aria-hidden="true" /> COMMITTED
+        </strong>
+      </div>
+    </motion.div>
+  );
+}
+
+function SectionActions({
+  primaryLabel,
+  primaryHref,
+  secondaryLabel,
+  secondaryHref,
+}: {
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+}) {
+  return (
+    <div className="cinematic-actions">
+      <motion.a
+        className="cinematic-primary-cta"
+        href={primaryHref}
+        whileHover={{scale: 1.04, filter: 'brightness(1.1)'}}
+        whileTap={{scale: 0.96}}
+      >
+        <span>{primaryLabel}</span>
+        <ArrowRightCircle size={20} aria-hidden="true" />
+      </motion.a>
+      <a className="cinematic-secondary-cta" href={secondaryHref}>
+        {secondaryLabel}
+      </a>
     </div>
+  );
+}
+
+function DeveloperProofSection({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
+  return (
+    <section className="developer-proof-section" id="proof">
+      <div className="shell developer-proof-layout">
+        <motion.div
+          className="developer-proof-copy"
+          initial={reducedMotion ? false : {opacity: 0, y: 30}}
+          whileInView={{opacity: 1, y: 0}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{duration: 0.68, ease: [0.22, 1, 0.36, 1]}}
+        >
+          <span className="cinematic-kicker">Clearing API for agent work</span>
+          <h2>One request. One bounded outcome.</h2>
+          <p>
+            Send a task, budget, and frozen acceptance rule. Get back a
+            verdict, settlement authorization, and a receipt your platform can
+            act on.
+          </p>
+          <SectionActions
+            primaryLabel="Run the sandbox"
+            primaryHref="/demo"
+            secondaryLabel="View API docs"
+            secondaryHref="https://github.com/jh1nresh/mecharoon"
+          />
+
+          <div className="developer-proof-endpoint">
+            <strong>POST</strong> /v0/work-orders
+          </div>
+
+          <div className="developer-proof-facts">
+            {developerProofFacts.map((fact) => (
+              <div key={fact.value}>
+                <strong>{fact.value}</strong>
+                <span>{fact.label}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        <DeveloperProofConsole reducedMotion={reducedMotion} />
+      </div>
+    </section>
+  );
+}
+
+function ExpressiveBoundarySection({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
+  return (
+    <section className="expressive-boundary-section" id="boundary">
+      <div className="shell expressive-boundary-stage">
+        <motion.div
+          className="expressive-boundary-copy"
+          initial={reducedMotion ? false : {opacity: 0, y: 30}}
+          whileInView={{opacity: 1, y: 0}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{duration: 0.68, ease: [0.22, 1, 0.36, 1]}}
+        >
+          <span className="cinematic-kicker">Bounded monetary authority</span>
+          <h2>
+            Every paid agent job needs <span>a boundary.</span>
+          </h2>
+          <p>
+            Delegate only what the job needs. Reserve one amount. Release
+            payment only after the committed evidence passes.
+          </p>
+          <SectionActions
+            primaryLabel="See one job clear"
+            primaryHref="/demo"
+            secondaryLabel="Explore architecture"
+            secondaryHref="#flow"
+          />
+        </motion.div>
+
+        <BoundaryDiagram reducedMotion={reducedMotion} />
+        <BoundaryReceipt reducedMotion={reducedMotion} />
+      </div>
+    </section>
   );
 }
 
@@ -416,87 +723,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="proof-section" id="proof">
-          <div className="shell proof-grid">
-            <div className="proof-copy">
-              <span className="section-kicker">Local failure proof</span>
-              <h2>The receipt exists only after the economic truth is known.</h2>
-              <p>
-                The current MVP exercises the failures that a happy-path
-                payment demo skips: concurrent reservation, duplicate
-                requests, revision, uncertain settlement, and premature
-                reputation.
-              </p>
+        <DeveloperProofSection reducedMotion={reducedMotion} />
 
-              <div className="proof-facts">
-                {proofFacts.map((fact) => (
-                  <div key={fact.value}>
-                    <strong>{fact.value}</strong>
-                    <span>{fact.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <a
-                className="text-link"
-                href="https://github.com/jh1nresh/mecharoon"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Inspect the repository <span aria-hidden="true">↗</span>
-              </a>
-            </div>
-
-            <FinalReceipt />
-          </div>
-
-          <div className="shell proof-boundary">
-            <span>PostgreSQL-backed test path</span>
-            <span>Simulated settlement adapter</span>
-            <span>No customer funds held</span>
-          </div>
-        </section>
-
-        <section className="boundary-section section-rule" id="boundary">
-          <div className="shell boundary-heading">
-            <span className="section-kicker">Rail neutral by design</span>
-            <h2>Control the work offchain. Keep settlement rail-neutral.</h2>
-          </div>
-
-          <div className="shell boundary-grid">
-            <article>
-              <span>Mecharoon owns the decision</span>
-              <h3>Authority, evidence, verdict, and reputation stay above the rail.</h3>
-              <p>
-                Your platform remains the system of engagement. Mecharoon
-                returns deterministic next actions and a finance-readable
-                receipt.
-              </p>
-              <ul>
-                <li>Delegated and revocable limits</li>
-                <li>Atomic reservation across ancestors</li>
-                <li>Committed evidence and acceptance verdict</li>
-                <li>FinalReceipt and contextual next limit</li>
-              </ul>
-            </article>
-
-            <article>
-              <span>The adapter owns movement</span>
-              <h3>Only approved value is eligible to cross into a settlement rail.</h3>
-              <p>
-                The MVP uses a simulated adapter. The same state machine can
-                later observe wallets, API credits, cards, or invoices without
-                turning Mecharoon into a payment rail.
-              </p>
-              <div className="rail-line" aria-label="Potential settlement rails">
-                <span>Wallets</span>
-                <span>API credits</span>
-                <span>Cards</span>
-                <span>Invoices</span>
-              </div>
-            </article>
-          </div>
-        </section>
+        <ExpressiveBoundarySection reducedMotion={reducedMotion} />
 
         <section className="pilot-section" id="pilot">
           <div className="shell pilot-inner">
