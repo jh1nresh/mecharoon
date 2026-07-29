@@ -1,22 +1,40 @@
 'use client';
 
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+import {useEffect, useState} from 'react';
+import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
 import {
-  useState,
-  useSyncExternalStore,
-} from 'react';
+  ArrowRightCircle,
+  Fingerprint,
+  LockKeyhole,
+  Menu,
+  X,
+  Zap,
+} from 'lucide-react';
 
-const ClearingMachineScene = dynamic(
-  () =>
-    import('./clearing-machine-scene').then(
-      (module) => module.ClearingMachineScene,
-    ),
-  {
-    ssr: false,
-    loading: () => <div className="clearing-machine-loading" aria-hidden="true" />,
-  },
-);
+const heroVideoUrl =
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_003132_8b7edcb6-c64d-4a52-a9ca-879942e122ad.mp4';
+
+const heroNavLinks = [
+  {label: 'Control loop', href: '#flow'},
+  {label: 'Proof', href: '#proof'},
+  {label: 'Boundary', href: '#boundary'},
+  {label: 'Demo', href: '/demo'},
+  {label: 'GitHub', href: 'https://github.com/jh1nresh/mecharoon'},
+];
+
+const fadeUp = {
+  hidden: {opacity: 0, y: 28},
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: index * 0.15,
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
+  }),
+};
 
 const proofFacts = [
   {
@@ -72,70 +90,161 @@ function BrandWordmark() {
 }
 
 function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [menuOpen]);
+
   return (
-    <header className="site-header">
-      <div className="shell header-inner">
+    <header className="hero-header">
+      <div className="hero-header-inner">
         <a className="brand" href="#top" aria-label="Mecharoon home">
           <BrandMark />
           <BrandWordmark />
         </a>
 
-        <nav className="desktop-nav" aria-label="Main navigation">
-          <a href="#flow">Control loop</a>
-          <a href="#proof">Proof</a>
-          <a href="#boundary">Boundary</a>
+        <nav className="hero-desktop-nav" aria-label="Main navigation">
+          {heroNavLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              {...(link.href.startsWith('http')
+                ? {target: '_blank', rel: 'noreferrer'}
+                : {})}
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
 
-        <a className="button button-small button-dark" href="#pilot">
-          Join pilot
-        </a>
+        <div className="hero-header-actions">
+          <a className="hero-nav-button hero-nav-button-primary" href="#pilot">
+            Join pilot
+          </a>
+          <a className="hero-nav-button hero-nav-button-secondary" href="/demo">
+            View demo
+          </a>
+        </div>
+
+        <button
+          className="hero-menu-toggle"
+          type="button"
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open navigation"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
+        >
+          <Menu aria-hidden="true" />
+        </button>
       </div>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            <motion.button
+              className="hero-menu-backdrop"
+              type="button"
+              aria-label="Close navigation"
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              exit={{opacity: 0}}
+              transition={{duration: 0.24}}
+              onClick={() => setMenuOpen(false)}
+            />
+            <motion.div
+              id="mobile-navigation"
+              className="hero-menu-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile navigation"
+              initial={{x: '100%'}}
+              animate={{x: 0}}
+              exit={{x: '100%'}}
+              transition={{
+                duration: 0.45,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <div className="hero-menu-sheet-header">
+                <a
+                  className="brand"
+                  href="#top"
+                  aria-label="Mecharoon home"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <BrandMark />
+                  <BrandWordmark />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close navigation"
+                >
+                  <X aria-hidden="true" />
+                </button>
+              </div>
+
+              <nav className="hero-mobile-nav" aria-label="Mobile navigation">
+                {heroNavLinks.map((link, index) => (
+                  <motion.a
+                    key={link.label}
+                    href={link.href}
+                    initial={{opacity: 0, x: 22}}
+                    animate={{opacity: 1, x: 0}}
+                    transition={{
+                      delay: 0.18 + index * 0.07,
+                      duration: 0.36,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                    {...(link.href.startsWith('http')
+                      ? {target: '_blank', rel: 'noreferrer'}
+                      : {})}
+                  >
+                    {link.label}
+                  </motion.a>
+                ))}
+              </nav>
+
+              <div className="hero-menu-actions">
+                <a
+                  className="hero-nav-button hero-nav-button-primary"
+                  href="#pilot"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Join pilot
+                </a>
+                <a
+                  className="hero-nav-button hero-nav-button-secondary"
+                  href="/demo"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  View demo
+                </a>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
-  );
-}
-
-type MoneyFlowStageProps = {
-  paused: boolean;
-  reducedMotion: boolean;
-};
-
-const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
-
-function subscribeToReducedMotion(onChange: () => void) {
-  const mediaQuery = window.matchMedia(reducedMotionQuery);
-  mediaQuery.addEventListener('change', onChange);
-
-  return () => mediaQuery.removeEventListener('change', onChange);
-}
-
-function getReducedMotionSnapshot() {
-  return window.matchMedia(reducedMotionQuery).matches;
-}
-
-function getReducedMotionServerSnapshot() {
-  return true;
-}
-
-function usePrefersReducedMotion() {
-  return useSyncExternalStore(
-    subscribeToReducedMotion,
-    getReducedMotionSnapshot,
-    getReducedMotionServerSnapshot,
-  );
-}
-
-function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
-  return (
-    <div
-      className="money-flow-stage"
-      role="img"
-      aria-label="A five dollar work budget drops into Mecharoon, is reserved and verified, and only then does the approved FinalReceipt exit"
-    >
-      <ClearingMachineScene
-        paused={paused}
-        reducedMotion={reducedMotion}
-      />
-    </div>
   );
 }
 
@@ -191,59 +300,76 @@ function FinalReceipt() {
 }
 
 export default function Home() {
-  const [motionPaused, setMotionPaused] = useState(false);
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedMotion();
 
   return (
     <div id="top">
       <Header />
 
       <main>
-        <section className="hero hero-cinematic">
-          <div className="hero-product hero-enter-delayed">
-            <MoneyFlowStage
-              paused={motionPaused}
-              reducedMotion={reducedMotion}
-            />
+        <section className="vault-hero">
+          <div className="vault-hero-media" aria-hidden="true">
+            <video
+              className="vault-hero-video"
+              autoPlay={!reducedMotion}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              poster="/media/hero/mecharoon-money-flow-poster.jpg"
+            >
+              <source src={heroVideoUrl} type="video/mp4" />
+            </video>
           </div>
 
-          <div className="shell hero-foreground">
-            <div className="hero-copy hero-enter">
-              <span className="hero-kicker">
-                Verified settlement for paid agent work
-              </span>
-              <h1>Verify agent work. Then pay.</h1>
-              <p className="hero-subcopy">
+          <div className="vault-hero-inner">
+            <div className="vault-hero-copy">
+              <motion.h1
+                custom={0}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <Zap className="vault-heading-icon" aria-hidden="true" />
+                <span>Verify agent work.</span>
+                <LockKeyhole
+                  className="vault-heading-icon"
+                  aria-hidden="true"
+                />
+                <span>Then pay.</span>
+                <Fingerprint
+                  className="vault-heading-icon"
+                  aria-hidden="true"
+                />
+              </motion.h1>
+
+              <motion.p
+                className="vault-hero-subcopy"
+                custom={1}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+              >
                 Set the job, cap the budget, and define what counts as done.
                 Mecharoon reserves the budget, checks the result, and approves
                 payment only when the work passes.
-              </p>
-              <div className="hero-actions">
-                <a className="button button-dark" href="#flow">
-                  See the control loop
-                </a>
-                <a className="hero-text-link" href="#pilot">
-                  Join the pilot <span aria-hidden="true">↗</span>
-                </a>
-              </div>
+              </motion.p>
+
+              <motion.a
+                className="vault-hero-cta"
+                href="#pilot"
+                custom={2}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                whileHover={{scale: 1.04, filter: 'brightness(1.1)'}}
+                whileTap={{scale: 0.96}}
+              >
+                <span>Join the pilot</span>
+                <ArrowRightCircle size={20} aria-hidden="true" />
+              </motion.a>
             </div>
           </div>
-
-          {!reducedMotion && (
-            <button
-              className="motion-toggle"
-              type="button"
-              onClick={() => setMotionPaused((paused) => !paused)}
-              aria-pressed={motionPaused}
-              aria-label={
-                motionPaused
-                  ? 'Play money flow animation'
-                  : 'Pause money flow animation'
-              }
-            >
-              <span aria-hidden="true">{motionPaused ? '▶' : 'Ⅱ'}</span>
-            </button>
-          )}
         </section>
 
         <section className="story-section section-rule" id="flow">
