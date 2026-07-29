@@ -1049,7 +1049,7 @@ footer {
   min-height: max(690px, calc(100svh - 70px));
   overflow: hidden;
   padding: 0;
-  background: #edf3f5;
+  background: #f5f1e8;
 }
 
 .hero-cinematic .hero-product {
@@ -1074,7 +1074,7 @@ footer {
   align-self: flex-end;
   padding: 26px 28px 28px;
   border-left: 1px solid rgba(11, 31, 42, 0.2);
-  background: rgba(237, 243, 245, 0.88);
+  background: rgba(245, 241, 232, 0.88);
   pointer-events: auto;
 }
 
@@ -1131,37 +1131,38 @@ footer {
   inset: 0;
   min-height: 0;
   overflow: hidden;
-  background: #edf3f5;
+  background: #f5f1e8;
   isolation: isolate;
 }
 
-.cinematic-poster,
-.cinematic-video {
+.clearing-machine-loading,
+.clearing-machine-canvas {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center center;
+  background: #f5f1e8;
 }
 
-.cinematic-poster {
+.clearing-machine-loading {
   z-index: 0;
 }
 
-.cinematic-poster-mobile {
-  display: none;
-}
-
-.cinematic-video {
+.clearing-machine-canvas {
   z-index: 1;
   opacity: 0;
   transition: opacity 420ms ease;
 }
 
-.cinematic-video.is-ready {
+.clearing-machine-canvas.is-ready {
   opacity: 1;
+}
+
+.clearing-machine-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .motion-toggle {
@@ -1175,7 +1176,7 @@ footer {
   place-items: center;
   border: 1px solid rgba(11, 31, 42, 0.22);
   border-radius: 50%;
-  background: rgba(237, 243, 245, 0.9);
+  background: rgba(245, 241, 232, 0.9);
   color: var(--ink);
   cursor: pointer;
   font-family: var(--font-mono), monospace;
@@ -1193,10 +1194,6 @@ footer {
     width: min(100%, 380px);
   }
 
-  .cinematic-poster,
-  .cinematic-video {
-    object-position: 62% center;
-  }
 }
 
 @media (max-width: 780px) {
@@ -1215,7 +1212,7 @@ footer {
     width: min(100%, 420px);
     max-width: none;
     padding: 22px 22px 24px;
-    background: rgba(237, 243, 245, 0.93);
+    background: rgba(245, 241, 232, 0.93);
   }
 
   .hero-cinematic h1 {
@@ -1228,18 +1225,6 @@ footer {
     font-size: 14px;
   }
 
-  .cinematic-poster,
-  .cinematic-video {
-    object-position: center top;
-  }
-
-  .cinematic-poster-desktop {
-    display: none;
-  }
-
-  .cinematic-poster-mobile {
-    display: block;
-  }
 }
 
 @media (max-width: 560px) {
@@ -1274,10 +1259,6 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cinematic-video {
-    display: none;
-  }
-
   .motion-toggle {
     display: none;
   }

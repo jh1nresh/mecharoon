@@ -1,12 +1,22 @@
 'use client';
 
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import {
-  useEffect,
-  useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
+
+const ClearingMachineScene = dynamic(
+  () =>
+    import('./clearing-machine-scene').then(
+      (module) => module.ClearingMachineScene,
+    ),
+  {
+    ssr: false,
+    loading: () => <div className="clearing-machine-loading" aria-hidden="true" />,
+  },
+);
 
 const proofFacts = [
   {
@@ -115,86 +125,16 @@ function usePrefersReducedMotion() {
 }
 
 function MoneyFlowStage({paused, reducedMotion}: MoneyFlowStageProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoReady, setVideoReady] = useState(false);
-
-  useEffect(() => {
-    const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
-    if (paused) {
-      video.pause();
-      return;
-    }
-
-    void video.play().catch(() => undefined);
-  }, [paused]);
-
   return (
     <div
       className="money-flow-stage"
       role="img"
-      aria-label="A five dollar work budget rolls into Mecharoon, is visibly captured after verification, and only the approved FinalReceipt exits through the channel"
+      aria-label="A five dollar work budget drops into Mecharoon, is reserved and verified, and only then does the approved FinalReceipt exit"
     >
-      <Image
-        className="cinematic-poster cinematic-poster-desktop"
-        src="/media/hero/mecharoon-clearing-through-channel-poster.jpg"
-        alt=""
-        fill
-        sizes="(max-width: 780px) 1px, 100vw"
-        priority
-        aria-hidden="true"
+      <ClearingMachineScene
+        paused={paused}
+        reducedMotion={reducedMotion}
       />
-      <Image
-        className="cinematic-poster cinematic-poster-mobile"
-        src="/media/hero/mecharoon-clearing-through-channel-mobile-poster.jpg"
-        alt=""
-        fill
-        sizes="(max-width: 780px) 100vw, 1px"
-        priority
-        aria-hidden="true"
-      />
-      {!reducedMotion && (
-        <video
-          ref={videoRef}
-          className={`cinematic-video${videoReady ? ' is-ready' : ''}`}
-          autoPlay={!paused}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          onCanPlay={(event) => {
-            setVideoReady(true);
-
-            if (!paused) {
-              void event.currentTarget.play().catch(() => undefined);
-            }
-          }}
-        >
-          <source
-            media="(max-width: 780px)"
-            src="/media/hero/mecharoon-clearing-through-channel-mobile.webm"
-            type="video/webm"
-          />
-          <source
-            media="(max-width: 780px)"
-            src="/media/hero/mecharoon-clearing-through-channel-mobile.mp4"
-            type="video/mp4"
-          />
-          <source
-            src="/media/hero/mecharoon-clearing-through-channel.webm"
-            type="video/webm"
-          />
-          <source
-            src="/media/hero/mecharoon-clearing-through-channel.mp4"
-            type="video/mp4"
-          />
-        </video>
-      )}
     </div>
   );
 }
