@@ -1,11 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
 import {
   ArrowRightCircle,
-  Check,
   Fingerprint,
   LockKeyhole,
   Menu,
@@ -36,21 +35,6 @@ const fadeUp = {
     },
   }),
 };
-
-const developerProofFacts = [
-  {
-    value: '50',
-    label: 'concurrent attempts stayed inside the ancestor limit',
-  },
-  {
-    value: '1',
-    label: 'reservation survived 50 identical idempotency requests',
-  },
-  {
-    value: '0',
-    label: 'receipts existed before settlement finality',
-  },
-];
 
 function BrandMark({
   variant = 'color',
@@ -249,247 +233,6 @@ function Header() {
   );
 }
 
-function DeveloperProofConsole({
-  reducedMotion,
-}: {
-  reducedMotion: boolean | null;
-}) {
-  return (
-    <motion.div
-      className="developer-console"
-      aria-label="Illustrative API request and reconciled response"
-      initial={reducedMotion ? false : {opacity: 0, y: 36}}
-      whileInView={{opacity: 1, y: 0}}
-      viewport={{once: true, amount: 0.28}}
-      transition={{duration: 0.72, ease: [0.22, 1, 0.36, 1]}}
-    >
-      <header className="developer-console-head">
-        <span>MECHAROON / SANDBOX</span>
-        <span>SIMULATED SETTLEMENT · NO FUNDS MOVED</span>
-      </header>
-
-      <div className="developer-console-request">
-        <div className="developer-console-label">
-          <span>
-            <strong>POST</strong> /v0/work-orders
-          </span>
-          <span>REQUEST</span>
-        </div>
-        <pre>{`{
-  "job": "Verify pricing research",
-  "budget": 500,
-  "authority_limit": 1500,
-  "acceptance_rule": {
-    "pricing_facts": 3,
-    "citations_required": true
-  }
-}`}</pre>
-      </div>
-
-      <div className="developer-console-response">
-        <div className="developer-console-result">
-          <div className="developer-console-label">
-            <span className="developer-console-pass">201 · RECONCILED</span>
-            <span>RESPONSE</span>
-          </div>
-
-          <dl>
-            <div>
-              <dt>Work order</dt>
-              <dd>W-0187</dd>
-            </div>
-            <div>
-              <dt>Authority</dt>
-              <dd>A-0187</dd>
-            </div>
-            <div>
-              <dt>Reserved</dt>
-              <dd>$5.00</dd>
-            </div>
-            <div>
-              <dt>Evidence</dt>
-              <dd className="developer-console-pass">PASS</dd>
-            </div>
-            <div>
-              <dt>Authorized</dt>
-              <dd>$5.00</dd>
-            </div>
-            <div>
-              <dt>Next limit</dt>
-              <dd>$10.00</dd>
-            </div>
-          </dl>
-
-          <div className="developer-console-foot">
-            <span>RULE HASH · 7D9A…31F2</span>
-            <span>IDEMPOTENT · AUDITABLE</span>
-          </div>
-        </div>
-
-        <aside className="developer-console-receipt">
-          <div className="developer-receipt-mark">
-            <Check aria-hidden="true" />
-          </div>
-          <span>FINAL RECEIPT</span>
-          <strong>R-0187</strong>
-          <p>settlement reconciled</p>
-          <p>outcome committed</p>
-        </aside>
-      </div>
-    </motion.div>
-  );
-}
-
-function BoundaryDiagram({
-  reducedMotion,
-}: {
-  reducedMotion: boolean | null;
-}) {
-  const pathInitial = reducedMotion
-    ? false
-    : {pathLength: 0, opacity: 0};
-
-  return (
-    <motion.div
-      className="boundary-art"
-      aria-hidden="true"
-      initial={reducedMotion ? false : {opacity: 0, x: 48}}
-      whileInView={{opacity: 1, x: 0}}
-      viewport={{once: true, amount: 0.32}}
-      transition={{duration: 0.78, ease: [0.22, 1, 0.36, 1]}}
-    >
-      <svg viewBox="0 0 760 640" role="presentation">
-        <motion.path
-          className="boundary-band boundary-band-soft"
-          strokeWidth="58"
-          d="M 664 82 C 478 44, 282 146, 252 332 C 230 472, 310 570, 450 606"
-          initial={pathInitial}
-          whileInView={{pathLength: 1, opacity: 1}}
-          viewport={{once: true, amount: 0.3}}
-          transition={{duration: 1, ease: [0.22, 1, 0.36, 1]}}
-        />
-        <motion.path
-          className="boundary-band"
-          strokeWidth="28"
-          d="M 650 104 C 502 76, 340 154, 310 326 C 288 446, 360 526, 470 552"
-          initial={pathInitial}
-          whileInView={{pathLength: 1, opacity: 1}}
-          viewport={{once: true, amount: 0.3}}
-          transition={{
-            delay: reducedMotion ? 0 : 0.14,
-            duration: 0.9,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        />
-        <motion.path
-          className="boundary-band"
-          strokeWidth="15"
-          d="M 625 166 C 510 144, 400 212, 386 334 C 376 420, 420 470, 500 488"
-          initial={pathInitial}
-          whileInView={{pathLength: 1, opacity: 1}}
-          viewport={{once: true, amount: 0.3}}
-          transition={{
-            delay: reducedMotion ? 0 : 0.28,
-            duration: 0.82,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        />
-        <motion.path
-          className="boundary-reserve"
-          strokeWidth="15"
-          d="M 386 334 C 381 370, 387 398, 404 420"
-          initial={pathInitial}
-          whileInView={{pathLength: 1, opacity: 1}}
-          viewport={{once: true, amount: 0.3}}
-          transition={{
-            delay: reducedMotion ? 0 : 0.54,
-            duration: 0.42,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        />
-        <path
-          className="boundary-band boundary-band-route"
-          strokeWidth="2"
-          d="M 111 526 C 292 524, 448 514, 598 450"
-        />
-        <motion.circle
-          className="boundary-transaction"
-          cx="404"
-          cy="420"
-          r="16"
-          initial={reducedMotion ? false : {scale: 0, opacity: 0}}
-          whileInView={{scale: 1, opacity: 1}}
-          viewport={{once: true, amount: 0.3}}
-          transition={{
-            delay: reducedMotion ? 0 : 0.72,
-            duration: 0.38,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        />
-        <text className="boundary-route-label" x="532" y="140">
-          DELEGATE
-        </text>
-        <text className="boundary-route-label" x="302" y="372">
-          RESERVE
-        </text>
-        <text className="boundary-route-label" x="430" y="444">
-          RECONCILE
-        </text>
-      </svg>
-    </motion.div>
-  );
-}
-
-function BoundaryReceipt({
-  reducedMotion,
-}: {
-  reducedMotion: boolean | null;
-}) {
-  return (
-    <motion.div
-      className="boundary-receipt"
-      aria-label="Illustrative final receipt"
-      initial={reducedMotion ? false : {opacity: 0, y: 44}}
-      whileInView={{opacity: 1, y: 0}}
-      viewport={{once: true, amount: 0.3}}
-      transition={{
-        delay: reducedMotion ? 0 : 0.28,
-        duration: 0.7,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-    >
-      <div className="boundary-receipt-lead">
-        <span>ILLUSTRATIVE SANDBOX · NO FUNDS MOVED</span>
-        <strong>
-          FinalReceipt <span>R-0187</span>
-        </strong>
-      </div>
-      <div>
-        <span>WORK ORDER</span>
-        <strong>W-0187</strong>
-      </div>
-      <div>
-        <span>DELEGATED LIMIT</span>
-        <strong>$15.00</strong>
-      </div>
-      <div className="boundary-receipt-reserved">
-        <span>RESERVED / PASSED</span>
-        <strong>$5.00 · PASS</strong>
-      </div>
-      <div>
-        <span>SETTLEMENT</span>
-        <strong>RECONCILED</strong>
-      </div>
-      <div>
-        <span>OUTCOME</span>
-        <strong className="boundary-receipt-committed">
-          <i aria-hidden="true" /> COMMITTED
-        </strong>
-      </div>
-    </motion.div>
-  );
-}
-
 function SectionActions({
   primaryLabel,
   primaryHref,
@@ -519,27 +262,278 @@ function SectionActions({
   );
 }
 
+const evidenceReveal = {
+  duration: 0.68,
+  ease: [0.22, 1, 0.36, 1] as const,
+};
+
+const evidenceCanvasVariants = {
+  hidden: {
+    opacity: 0,
+    y: 22,
+    clipPath: 'inset(0 0 100% 0 round 34px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    clipPath: 'inset(0 0 0 0 round 34px)',
+    transition: {
+      duration: 0.82,
+      ease: [0.22, 1, 0.36, 1] as const,
+      delay: 0.17,
+    },
+  },
+};
+
+const subscribeToHydration = () => () => {};
+
+function useHydrated() {
+  return useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
+}
+
+function MicroTransfer({
+  label,
+  value,
+  reducedMotion,
+}: {
+  label: string;
+  value: string;
+  reducedMotion: boolean | null;
+}) {
+  return (
+    <motion.div
+      className="micro-transfer"
+      aria-hidden="true"
+      initial={reducedMotion ? false : {opacity: 0, x: 68}}
+      whileInView={{opacity: 1, x: 0}}
+      viewport={{once: true, amount: 0.3}}
+      transition={{
+        ...evidenceReveal,
+        duration: reducedMotion ? 0 : evidenceReveal.duration,
+        delay: reducedMotion ? 0 : 0.22,
+      }}
+    >
+      <i />
+      <small>{label}</small>
+      <strong>{value}</strong>
+      <b>→</b>
+    </motion.div>
+  );
+}
+
+function EvidenceSweep({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
+  if (reducedMotion) {
+    return null;
+  }
+
+  return (
+    <motion.span
+      className="evidence-sweep"
+      aria-hidden="true"
+      initial={reducedMotion ? false : {opacity: 0, scaleX: 0}}
+      whileInView={{opacity: [0, 0.7, 0], scaleX: 1}}
+      viewport={{once: true, amount: 0.3}}
+      transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+    />
+  );
+}
+
+function ChapterFooter({
+  lead,
+  chapter,
+}: {
+  lead: string;
+  chapter: string;
+}) {
+  return (
+    <div className="evidence-chapter-foot">
+      <span>{lead}</span>
+      <span>{chapter}</span>
+    </div>
+  );
+}
+
+function ControlLoopSection({
+  reducedMotion,
+}: {
+  reducedMotion: boolean | null;
+}) {
+  return (
+    <motion.section
+      className="evidence-chapter evidence-control"
+      id="flow"
+      data-chapter="01"
+      initial={reducedMotion ? 'visible' : 'hidden'}
+      whileInView="visible"
+      viewport={{once: true, amount: 0.2}}
+    >
+      <div className="shell evidence-shell">
+        <EvidenceSweep reducedMotion={reducedMotion} />
+        <motion.div
+          className="evidence-copy"
+          initial={reducedMotion ? false : {opacity: 0, y: 24}}
+          whileInView={{opacity: 1, y: 0}}
+          viewport={{once: true, amount: 0.3}}
+          transition={{
+            ...evidenceReveal,
+            duration: reducedMotion ? 0 : evidenceReveal.duration,
+            delay: reducedMotion ? 0 : 0.09,
+          }}
+        >
+          <span className="evidence-kicker">
+            <i /> One closed loop
+          </span>
+          <h2>
+            A payment rail sees money.
+            <span>Mecharoon sees the job.</span>
+          </h2>
+          <p>
+            The financial decision stays attached to the work—from delegated
+            authority through final settlement.
+          </p>
+        </motion.div>
+
+        <MicroTransfer
+          label="Work order"
+          value="W-0187"
+          reducedMotion={reducedMotion}
+        />
+
+        <motion.div
+          className="evidence-canvas control-canvas"
+          aria-label="Define, reserve, and reconcile flow"
+          variants={reducedMotion ? undefined : evidenceCanvasVariants}
+          initial={reducedMotion ? false : undefined}
+          animate={
+            reducedMotion
+              ? {
+                  opacity: 1,
+                  y: 0,
+                  clipPath: 'inset(0 0 0 0 round 34px)',
+                }
+              : undefined
+          }
+          transition={reducedMotion ? {duration: 0} : undefined}
+        >
+          <div className="canvas-meta">
+            <span>WORK ORDER · W-0187</span>
+            <span>SIMULATED SETTLEMENT</span>
+          </div>
+
+          <svg className="flow-map" viewBox="0 0 760 430" aria-hidden="true">
+            <defs>
+              <linearGradient id="flow-gradient" x1="0" x2="1">
+                <stop offset="0" stopColor="#a58aff" />
+                <stop offset=".52" stopColor="#7342e2" />
+                <stop offset="1" stopColor="#2c755f" />
+              </linearGradient>
+            </defs>
+            <path
+              className="flow-ghost"
+              d="M42 297 C176 297 170 121 324 121 S470 306 621 306 C681 306 706 272 726 240"
+            />
+            <path
+              className="flow-live"
+              d="M42 297 C176 297 170 121 324 121 S470 306 621 306 C681 306 706 272 726 240"
+            />
+            {!reducedMotion && (
+              <g className="flow-signal">
+                <circle r="21" />
+                <text x="0" y="4">
+                  $5
+                </text>
+                <animateMotion
+                  dur="5.4s"
+                  repeatCount="indefinite"
+                  path="M42 297 C176 297 170 121 324 121 S470 306 621 306 C681 306 706 272 726 240"
+                />
+              </g>
+            )}
+          </svg>
+
+          <div className="flow-stage flow-stage-define">
+            <b>01</b>
+            <div>
+              <small>DEFINE</small>
+              <strong>$15 authority</strong>
+            </div>
+          </div>
+          <div className="flow-stage flow-stage-reserve">
+            <b>02</b>
+            <div>
+              <small>RESERVE</small>
+              <strong>$5 held open</strong>
+            </div>
+          </div>
+          <div className="flow-stage flow-stage-reconcile">
+            <b>03</b>
+            <div>
+              <small>RECONCILE</small>
+              <strong>PASS observed</strong>
+            </div>
+          </div>
+
+          <div className="evidence-receipt-pill">
+            <span>FINAL RECEIPT</span>
+            <strong>R-0187</strong>
+            <i>COMMITTED</i>
+          </div>
+        </motion.div>
+
+        <ChapterFooter
+          lead="Authority → reserve → verdict → receipt"
+          chapter="01 / Control loop"
+        />
+      </div>
+    </motion.section>
+  );
+}
+
 function DeveloperProofSection({
   reducedMotion,
 }: {
   reducedMotion: boolean | null;
 }) {
   return (
-    <section className="developer-proof-section" id="proof">
-      <div className="shell developer-proof-layout">
+    <motion.section
+      className="evidence-chapter evidence-proof"
+      id="proof"
+      data-chapter="02"
+      initial={reducedMotion ? 'visible' : 'hidden'}
+      whileInView="visible"
+      viewport={{once: true, amount: 0.2}}
+    >
+      <div className="shell evidence-shell">
+        <EvidenceSweep reducedMotion={reducedMotion} />
         <motion.div
-          className="developer-proof-copy"
-          initial={reducedMotion ? false : {opacity: 0, y: 30}}
+          className="evidence-copy"
+          initial={reducedMotion ? false : {opacity: 0, y: 24}}
           whileInView={{opacity: 1, y: 0}}
           viewport={{once: true, amount: 0.3}}
-          transition={{duration: 0.68, ease: [0.22, 1, 0.36, 1]}}
+          transition={{
+            ...evidenceReveal,
+            duration: reducedMotion ? 0 : evidenceReveal.duration,
+            delay: reducedMotion ? 0 : 0.09,
+          }}
         >
-          <span className="cinematic-kicker">Clearing API for agent work</span>
-          <h2>One request. One bounded outcome.</h2>
+          <span className="evidence-kicker">
+            <i /> Clearing API for agent work
+          </span>
+          <h2>
+            One request.
+            <span>One bounded outcome.</span>
+          </h2>
           <p>
-            Send a task, budget, and frozen acceptance rule. Get back a
-            verdict, settlement authorization, and a receipt your platform can
-            act on.
+            Send a task, budget, and frozen acceptance rule. Get back a verdict,
+            settlement authorization, and a receipt your platform can act on.
           </p>
           <SectionActions
             primaryLabel="Run the sandbox"
@@ -547,24 +541,84 @@ function DeveloperProofSection({
             secondaryLabel="View API docs"
             secondaryHref="https://github.com/jh1nresh/mecharoon"
           />
+        </motion.div>
 
-          <div className="developer-proof-endpoint">
-            <strong>POST</strong> /v0/work-orders
+        <MicroTransfer
+          label="Committed evidence"
+          value="3 facts"
+          reducedMotion={reducedMotion}
+        />
+
+        <motion.div
+          className="evidence-canvas proof-canvas"
+          aria-label="API request resolving into a final receipt"
+          variants={reducedMotion ? undefined : evidenceCanvasVariants}
+          initial={reducedMotion ? false : undefined}
+          animate={
+            reducedMotion
+              ? {
+                  opacity: 1,
+                  y: 0,
+                  clipPath: 'inset(0 0 0 0 round 34px)',
+                }
+              : undefined
+          }
+          transition={reducedMotion ? {duration: 0} : undefined}
+        >
+          <div className="proof-topline">
+            <span>
+              <b>POST</b> /v0/work-orders
+            </span>
+            <i>SIMULATION</i>
           </div>
 
-          <div className="developer-proof-facts">
-            {developerProofFacts.map((fact) => (
-              <div key={fact.value}>
-                <strong>{fact.value}</strong>
-                <span>{fact.label}</span>
-              </div>
-            ))}
+          <div className="request-stub">
+            <small>REQUEST</small>
+            <strong>task + budget + rule</strong>
+            <span>7D9A…31F2</span>
+          </div>
+
+          <div className="proof-rule">
+            <div className="rule-progress" />
+          </div>
+
+          <dl className="proof-ledger">
+            <div>
+              <dt>01 / AUTHORITY</dt>
+              <dd>$15.00</dd>
+              <span>parent limit</span>
+            </div>
+            <div>
+              <dt>02 / RESERVED</dt>
+              <dd>$5.00</dd>
+              <span>W-0187</span>
+            </div>
+            <div>
+              <dt>03 / EVIDENCE</dt>
+              <dd className="proof-pass">PASS</dd>
+              <span>3 facts + citations</span>
+            </div>
+            <div>
+              <dt>04 / NEXT LIMIT</dt>
+              <dd>$10.00</dd>
+              <span>contextual</span>
+            </div>
+          </dl>
+
+          <div className="evidence-receipt-sheet">
+            <span className="receipt-check">✓</span>
+            <small>FINAL RECEIPT</small>
+            <strong>R-0187</strong>
+            <i>OUTCOME COMMITTED</i>
           </div>
         </motion.div>
 
-        <DeveloperProofConsole reducedMotion={reducedMotion} />
+        <ChapterFooter
+          lead="Illustrative sandbox · no funds moved"
+          chapter="02 / Developer proof"
+        />
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -574,18 +628,33 @@ function ExpressiveBoundarySection({
   reducedMotion: boolean | null;
 }) {
   return (
-    <section className="expressive-boundary-section" id="boundary">
-      <div className="shell expressive-boundary-stage">
+    <motion.section
+      className="evidence-chapter evidence-boundary"
+      id="boundary"
+      data-chapter="03"
+      initial={reducedMotion ? 'visible' : 'hidden'}
+      whileInView="visible"
+      viewport={{once: true, amount: 0.2}}
+    >
+      <div className="shell evidence-shell">
+        <EvidenceSweep reducedMotion={reducedMotion} />
         <motion.div
-          className="expressive-boundary-copy"
-          initial={reducedMotion ? false : {opacity: 0, y: 30}}
+          className="evidence-copy"
+          initial={reducedMotion ? false : {opacity: 0, y: 24}}
           whileInView={{opacity: 1, y: 0}}
           viewport={{once: true, amount: 0.3}}
-          transition={{duration: 0.68, ease: [0.22, 1, 0.36, 1]}}
+          transition={{
+            ...evidenceReveal,
+            duration: reducedMotion ? 0 : evidenceReveal.duration,
+            delay: reducedMotion ? 0 : 0.09,
+          }}
         >
-          <span className="cinematic-kicker">Bounded monetary authority</span>
+          <span className="evidence-kicker">
+            <i /> Bounded monetary authority
+          </span>
           <h2>
-            Every paid agent job needs <span>a boundary.</span>
+            Every paid agent job needs
+            <span>a boundary.</span>
           </h2>
           <p>
             Delegate only what the job needs. Reserve one amount. Release
@@ -599,15 +668,198 @@ function ExpressiveBoundarySection({
           />
         </motion.div>
 
-        <BoundaryDiagram reducedMotion={reducedMotion} />
-        <BoundaryReceipt reducedMotion={reducedMotion} />
+        <MicroTransfer
+          label="Final receipt"
+          value="R-0187"
+          reducedMotion={reducedMotion}
+        />
+
+        <motion.div
+          className="boundary-canvas"
+          aria-label="Nested delegated authority boundaries"
+          variants={reducedMotion ? undefined : evidenceCanvasVariants}
+          initial={reducedMotion ? false : undefined}
+          animate={
+            reducedMotion
+              ? {
+                  opacity: 1,
+                  y: 0,
+                  clipPath: 'inset(0 0 0 0 round 34px)',
+                }
+              : undefined
+          }
+          transition={reducedMotion ? {duration: 0} : undefined}
+        >
+          <div className="boundary-meta">
+            <span>AUTHORITY PATH · A-002</span>
+            <i>BOUNDED</i>
+          </div>
+
+          <svg className="boundary-map" viewBox="0 0 720 530" aria-hidden="true">
+            <defs>
+              <linearGradient id="boundary-accent" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#7342e2" />
+                <stop offset=".58" stopColor="#9275ee" />
+                <stop offset="1" stopColor="#2c755f" />
+              </linearGradient>
+            </defs>
+            <motion.path
+              className="boundary-line boundary-outer"
+              d="M620 68 H238 C146 68 82 136 82 228 V472"
+              variants={
+                reducedMotion
+                  ? undefined
+                  : {
+                      hidden: {pathLength: 0, opacity: 0},
+                      visible: {
+                        pathLength: 1,
+                        opacity: 1,
+                        transition: {
+                          duration: 0.95,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      },
+                    }
+              }
+              initial={reducedMotion ? false : undefined}
+              animate={
+                reducedMotion ? {pathLength: 1, opacity: 1} : undefined
+              }
+              transition={reducedMotion ? {duration: 0} : undefined}
+            />
+            <motion.path
+              className="boundary-line boundary-middle"
+              d="M593 132 H284 C206 132 151 187 151 265 V453"
+              variants={
+                reducedMotion
+                  ? undefined
+                  : {
+                      hidden: {pathLength: 0, opacity: 0},
+                      visible: {
+                        pathLength: 1,
+                        opacity: 1,
+                        transition: {
+                          duration: 0.82,
+                          delay: 0.12,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      },
+                    }
+              }
+              initial={reducedMotion ? false : undefined}
+              animate={
+                reducedMotion ? {pathLength: 1, opacity: 1} : undefined
+              }
+              transition={reducedMotion ? {duration: 0} : undefined}
+            />
+            <motion.path
+              className="boundary-line boundary-inner"
+              d="M560 207 H334 C268 207 225 250 225 316 V430"
+              variants={
+                reducedMotion
+                  ? undefined
+                  : {
+                      hidden: {pathLength: 0, opacity: 0},
+                      visible: {
+                        pathLength: 1,
+                        opacity: 1,
+                        transition: {
+                          duration: 0.72,
+                          delay: 0.24,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      },
+                    }
+              }
+              initial={reducedMotion ? false : undefined}
+              animate={
+                reducedMotion ? {pathLength: 1, opacity: 1} : undefined
+              }
+              transition={reducedMotion ? {duration: 0} : undefined}
+            />
+            <motion.path
+              className="boundary-seam"
+              d="M560 207 H334 C268 207 225 250 225 316 V430"
+              variants={
+                reducedMotion
+                  ? undefined
+                  : {
+                      hidden: {pathLength: 0, opacity: 0},
+                      visible: {
+                        pathLength: 0.34,
+                        opacity: 1,
+                        transition: {
+                          duration: 0.5,
+                          delay: 0.48,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      },
+                    }
+              }
+              initial={reducedMotion ? false : undefined}
+              animate={
+                reducedMotion ? {pathLength: 0.34, opacity: 1} : undefined
+              }
+              transition={reducedMotion ? {duration: 0} : undefined}
+            />
+          </svg>
+
+          <div className="boundary-label boundary-parent">
+            <small>PARENT</small>
+            <strong>$15.00</strong>
+          </div>
+          <div className="boundary-label boundary-child">
+            <small>CHILD</small>
+            <strong>$5.00</strong>
+          </div>
+          <div className="boundary-label boundary-work">
+            <small>WORK ORDER</small>
+            <strong>W-0187</strong>
+          </div>
+
+          <div className="boundary-transaction">
+            <span />
+            <small>TRANSACTION</small>
+          </div>
+
+          <div className="boundary-final-receipt">
+            <small>FINAL RECEIPT</small>
+            <strong>R-0187</strong>
+            <span>$5 · PASS · RECONCILED</span>
+          </div>
+        </motion.div>
+
+        <ChapterFooter
+          lead="Delegate only what the work requires"
+          chapter="03 / Authority boundary"
+        />
       </div>
-    </section>
+    </motion.section>
   );
 }
 
 export default function Home() {
-  const reducedMotion = useReducedMotion();
+  const userReducedMotion = useReducedMotion();
+  const motionPreferencesReady = useHydrated();
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const reducedMotion =
+    motionPreferencesReady && userReducedMotion === true;
+
+  useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video || !motionPreferencesReady) {
+      return;
+    }
+
+    if (reducedMotion) {
+      video.pause();
+      return;
+    }
+
+    void video.play().catch(() => {
+      // The poster remains the deterministic fallback when autoplay is denied.
+    });
+  }, [motionPreferencesReady, reducedMotion]);
 
   return (
     <div id="top">
@@ -617,8 +869,9 @@ export default function Home() {
         <section className="vault-hero">
           <div className="vault-hero-media" aria-hidden="true">
             <video
+              ref={heroVideoRef}
               className="vault-hero-video"
-              autoPlay={!reducedMotion}
+              autoPlay
               muted
               loop
               playsInline
@@ -679,49 +932,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="story-section section-rule" id="flow">
-          <div className="shell story-layout">
-            <div className="story-heading">
-              <span className="section-kicker">One closed loop</span>
-              <h2>A payment rail sees money. Mecharoon sees the job.</h2>
-              <p>
-                The financial decision stays attached to the work from
-                delegated authority through final settlement.
-              </p>
-            </div>
-
-            <div className="story-sequence">
-              <article>
-                <span>Before work</span>
-                <h3>Define exactly what the agent may do.</h3>
-                <p>
-                  Bind the work order to an authority path, a budget cap, an
-                  idempotency key, and an acceptance rule.
-                </p>
-                <strong>Authority → budget → acceptance rule</strong>
-              </article>
-              <article>
-                <span>While working</span>
-                <h3>Keep exposure reserved until the result is known.</h3>
-                <p>
-                  A revision keeps the budget open. A failed or uncertain
-                  settlement cannot silently become spendable again.
-                </p>
-                <strong>Reserve → evidence → PASS or REVISE</strong>
-              </article>
-              <article>
-                <span>After work</span>
-                <h3>Turn finality into the next authority decision.</h3>
-                <p>
-                  The FinalReceipt connects accepted work to observed payment
-                  state and raises or lowers the contextual limit for the next
-                  job.
-                </p>
-                <strong>Reconcile → receipt → next limit</strong>
-              </article>
-            </div>
-          </div>
-        </section>
+        <ControlLoopSection reducedMotion={reducedMotion} />
 
         <DeveloperProofSection reducedMotion={reducedMotion} />
 
