@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mecharoon-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: PostgreSQL settlement loop
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NODE_ENV: test
+      PGHOST: /var/run/postgresql
+      PGPORT: 5432
+      PGDATABASE: mecharoon_test
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare loopback-only test database
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo systemctl start postgresql.service
+          database_user="$(id -un)"
+          if ! sudo -u postgres psql -tAc \
+            "SELECT 1 FROM pg_roles WHERE rolname = '$database_user'" | grep -q 1; then
+            sudo -u postgres createuser --superuser "$database_user"
+          fi
+          sudo -u postgres createdb --owner="$database_user" mecharoon_test
+          echo "PGUSER=$database_user" >> "$GITHUB_ENV"
+          pg_isready --host "$PGHOST" --dbname "$PGDATABASE"
+
+      - name: Verify migrations, state transitions, concurrency, and app build
+        run: npm run check
+
+      - name: Confirm production artifact
+        run: test -f .next/BUILD_ID
