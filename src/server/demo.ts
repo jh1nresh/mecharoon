@@ -6,6 +6,7 @@ import {systemRuntime, type Runtime} from './domain/runtime';
 import {codingPolicyHash} from './evaluation/coding-v0';
 import {createOperatorService} from './operator';
 import {createQueryService} from './queries';
+import {simulatedSettlementProfile} from './settlement/profile';
 import {seedDemo} from './setup';
 
 function requiredResource<T>(
@@ -58,7 +59,10 @@ async function executeGoldenScenario(
     id: (prefix) => runtime.id(`${namespace}_${prefix}`),
   };
   const seed = await seedDemo(pool, {runtime: runRuntime, namespace});
-  const agent = createAgentService(pool, {runtime: runRuntime});
+  const agent = createAgentService(pool, {
+    runtime: runRuntime,
+    settlementProfile: simulatedSettlementProfile,
+  });
   const operator = createOperatorService(pool, {runtime: runRuntime});
   const queries = createQueryService(pool);
   const policyHash = codingPolicyHash(['lint', 'unit']);

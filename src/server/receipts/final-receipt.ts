@@ -34,14 +34,24 @@ export type FinalReceiptDocument = {
   settlement: {
     instruction_id: string;
     instruction_hash: string;
-    adapter: "simulated_onchain_v0";
-    chain: "simulated";
+    adapter: "simulated_onchain_v0" | "arc_testnet_erc8183_v0";
+    chain: "simulated" | "arc_testnet";
     asset: "USDC";
     amount_minor: string;
     payer_id: string;
     payee_id: string;
     tx_hash: string;
-    finality: "simulated_confirmed";
+    finality: "simulated_confirmed" | "arc_testnet_confirmed";
+    amount_atomic: string | null;
+    payer_address: string | null;
+    payee_address: string | null;
+    evaluator_address: string | null;
+    chain_id: number | null;
+    contract_address: string | null;
+    external_job_id: string | null;
+    external_status: string | null;
+    explorer_url: string | null;
+    transaction_hashes: string[];
   };
   finalized_at: string;
 };
@@ -77,6 +87,18 @@ export function buildFinalReceipt(input: {
     amount_minor: string;
     payer_id: string;
     payee_id: string;
+    adapter?: "simulated_onchain_v0" | "arc_testnet_erc8183_v0";
+    chain?: "simulated" | "arc_testnet";
+    amount_atomic?: string | null;
+    payer_address?: string | null;
+    payee_address?: string | null;
+    evaluator_address?: string | null;
+    chain_id?: number | null;
+    contract_address?: string | null;
+    external_job_id?: string | null;
+    external_status?: string | null;
+    explorer_url?: string | null;
+    transaction_hashes?: string[];
   };
   txHash: string;
   finalizedAt: Date;
@@ -115,14 +137,27 @@ export function buildFinalReceipt(input: {
     settlement: {
       instruction_id: input.instruction.id,
       instruction_hash: input.instruction.instruction_hash,
-      adapter: "simulated_onchain_v0",
-      chain: "simulated",
+      adapter: input.instruction.adapter ?? "simulated_onchain_v0",
+      chain: input.instruction.chain ?? "simulated",
       asset: "USDC",
       amount_minor: input.instruction.amount_minor,
       payer_id: input.instruction.payer_id,
       payee_id: input.instruction.payee_id,
       tx_hash: input.txHash,
-      finality: "simulated_confirmed",
+      finality:
+        input.instruction.adapter === "arc_testnet_erc8183_v0"
+          ? "arc_testnet_confirmed"
+          : "simulated_confirmed",
+      amount_atomic: input.instruction.amount_atomic ?? null,
+      payer_address: input.instruction.payer_address ?? null,
+      payee_address: input.instruction.payee_address ?? null,
+      evaluator_address: input.instruction.evaluator_address ?? null,
+      chain_id: input.instruction.chain_id ?? null,
+      contract_address: input.instruction.contract_address ?? null,
+      external_job_id: input.instruction.external_job_id ?? null,
+      external_status: input.instruction.external_status ?? null,
+      explorer_url: input.instruction.explorer_url ?? null,
+      transaction_hashes: input.instruction.transaction_hashes ?? [input.txHash],
     },
     finalized_at: input.finalizedAt.toISOString(),
   };
