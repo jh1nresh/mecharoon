@@ -4,11 +4,17 @@
 
 **Product:** Mecharoon
 
-**Category:** Agent Spend Control Plane
+**Category:** AI-native hardware authority wallet
 
-**Core promise:** Every autonomous transaction is delegated deliberately, reserved atomically, and reconciled with an auditable receipt.
+**Core promise:** Give autonomous actors hardware-bound identity, bounded authority, and verifiable receipts for consequential actions.
 
-Mecharoon should feel like financial infrastructure with judgment: exact, calm, and accountable. It is not a wallet, a payment rail, a crypto protocol, or an AI character. The identity visualizes a control system that can constrain action without slowing it down.
+Mecharoon should feel like hardware trust infrastructure with judgment: exact, calm, and accountable. It is an authority wallet and local proof agent, not a generic payment rail, speculative crypto protocol, or decorative AI character. The identity visualizes a control system that can constrain action without slowing it down.
+
+> **Migration boundary (2026-08-02):** Existing exported logos and the public
+> landing still use the legacy `Agent Spend Control Plane` descriptor. Treat
+> those assets as evidence of the current software MVP, not the final hardware
+> product identity. Do not silently relabel or regenerate them until the first
+> hardware proof and product name are selected together.
 
 ## Identity idea
 

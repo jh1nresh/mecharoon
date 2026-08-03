@@ -1,11 +1,44 @@
 # Mecharoon
 
+**The AI hardware wallet for autonomous actors.**
+
+Mecharoon is a hardware-backed authority and proof agent. It lets a human,
+organization, AI agent, robot, or other autonomous machine hold a
+hardware-bound identity, control assets, delegate bounded capabilities, and
+produce verifiable receipts for consequential actions.
+
+The long-term product is not only a payment wallet. It is a hardware root for
+four separable concerns:
+
+- **Identity:** which autonomous actor and device executed the action;
+- **Authority:** which policy, capability, amount, counterparty, and time
+  boundary allowed it;
+- **Assets:** which wallet, account, payment rail, or resource it could control;
+- **Governance:** how its policy can be upgraded, recovered, revoked, or
+  terminated.
+
+An agent may itself be the operational root and issue attenuated capabilities
+to child agents or machines. A human does not have to sit at the top of every
+tree. Self-sovereign roots still require an explicit governance constitution,
+recovery path, or threshold policy so the same agent cannot silently rewrite
+its constraints, execute an action, and declare itself correct.
+
+See [the hardware authority architecture](docs/hardware-authority-wallet.md)
+for the product boundary and node model.
+
+## Current software proof
+
 **Verify agent work. Then pay.**
 
 Mecharoon verifies agent work offchain and authorizes only approved value for
 onchain settlement. Each finalized receipt updates contextual reputation,
 setting the agent’s next limit and routing. This MVP uses a simulated
 settlement adapter; no real funds move.
+
+This repository currently proves software invariants around delegated
+authority, atomic reservation, settlement reconciliation, and replayable
+receipts. It does **not** yet contain a secure element, production signer,
+device attestation, robot integration, custom hardware, or real asset custody.
 
 The first wedge is verified settlement for external agent work: a buyer
 delegates bounded authority and creates a frozen WorkOrder; Mecharoon reserves
