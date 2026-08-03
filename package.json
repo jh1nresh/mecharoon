@@ -17,6 +17,7 @@
     "db:reset:test": "PGDATABASE=mecharoon_test tsx scripts/db-reset-test.ts",
     "demo:run": "PGDATABASE=${PGDATABASE:-mecharoon_dev} tsx scripts/demo-run.ts",
     "test:unit": "tsx --test tests/core/*.test.ts",
+    "test:contracts": "forge test -vvv",
     "test:integration": "PGDATABASE=mecharoon_test tsx --test --test-concurrency=1 tests/integration/*.test.ts",
     "test:concurrency": "PGDATABASE=mecharoon_test tsx --test --test-concurrency=1 tests/concurrency/*.test.ts",
     "test": "npm run db:migrate:test && npm run test:unit && npm run test:integration && npm run test:concurrency",

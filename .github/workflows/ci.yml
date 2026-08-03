@@ -15,6 +15,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  contracts:
+    name: Arc ERC-8183 fork tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository and Foundry dependencies
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+        with:
+          version: stable
+
+      - name: Verify pinned deployment, lifecycle, fuzz, and invariants
+        run: forge test -vvv
+
   check:
     name: PostgreSQL settlement loop
     runs-on: ubuntu-latest

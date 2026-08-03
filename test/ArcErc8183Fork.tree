@@ -1,0 +1,43 @@
+ArcErc8183Fork
+├── deployment
+│   ├── when the Arc chain ID differs
+│   │   └── it should fail the pinned deployment test
+│   ├── when the proxy implementation differs
+│   │   └── it should fail the pinned deployment test
+│   └── when the payment token differs
+│       └── it should fail the pinned deployment test
+├── setBudget
+│   ├── when the caller is the client
+│   │   └── it should revert Unauthorized
+│   └── when the caller is the provider
+│       └── it should record the fuzzed USDC budget
+├── submit
+│   ├── when the caller is not the provider
+│   │   └── it should revert Unauthorized
+│   └── when the funded provider submits
+│       └── it should transition Funded to Submitted
+├── complete
+│   ├── when the caller is not the evaluator
+│   │   └── it should revert Unauthorized
+│   └── when the evaluator completes a submitted job
+│       ├── it should transition Submitted to Completed
+│       └── it should conserve client, escrow, provider, evaluator, and treasury USDC
+└── claimRefund
+    ├── when the job has not expired
+    │   └── it should revert WrongStatus
+    └── when any caller claims after expiry
+        ├── it should return the full budget only to the client
+        └── it should transition Funded to Expired
+
+Test boundary
+├── deployment and ABI assertions read the real Arc Testnet fork
+└── state-changing USDC tests replace only Arc USDC bytecode with a test ERC-20
+    └── because Arc native USDC delegates transfers to a chain-specific system contract unsupported by vanilla Foundry
+
+ArcErc8183Invariant
+├── while the job is Funded or Submitted
+│   └── escrow should retain exactly the job budget above its fork baseline
+├── after Completed, Rejected, or Expired
+│   └── escrow should return to its fork baseline
+└── after every generated action sequence
+    └── tracked USDC should be conserved

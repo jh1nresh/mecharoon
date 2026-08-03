@@ -251,6 +251,7 @@ test("Arc ERC-8183 adapter executes only the fixed six-step USDC job flow", asyn
     ],
   );
   assert.equal(calls[1]?.abiParameters[1], "5000000");
+  assert.equal(calls[2]?.walletId, config.providerWalletId);
   assert.equal(new Set(calls.map((call) => call.idempotencyKey)).size, 6);
 
   const firstKeys = calls.map((call) => call.idempotencyKey);
