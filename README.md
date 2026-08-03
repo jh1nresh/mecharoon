@@ -4,8 +4,11 @@
 
 Mecharoon verifies agent work offchain and authorizes only approved value for
 onchain settlement. Each finalized receipt updates contextual reputation,
-setting the agent’s next limit and routing. This MVP uses a simulated
-settlement adapter; no real funds move.
+setting the agent’s next limit and routing. The public walkthrough and local
+golden loop use a simulated adapter. An opt-in Arc Testnet adapter can execute
+the same reservation-bound instruction through Circle developer-controlled
+wallets and the allowlisted ERC-8183 reference contract; testnet tokens have no
+financial value.
 
 The first wedge is verified settlement for external agent work: a buyer
 delegates bounded authority and creates a frozen WorkOrder; Mecharoon reserves
@@ -61,18 +64,56 @@ Implemented:
   mode, and can use the invite-only hosted endpoint when explicitly enabled.
 - One fixed `POST /api/v0/sandbox/runs` workflow for a single design partner,
   with a distinct bearer key, top-level idempotency, quota, and run audit state.
+- An opt-in `arc_testnet_erc8183_v0` executor fixed to Arc Testnet chain
+  `5042002`, Arc USDC, and the verified ERC-8183 reference proxy. It creates,
+  approves, budgets, funds, submits, and completes one job through three fixed
+  Circle wallets, then fetches the job and completion receipt back from Arc.
+- Arc observations and FinalReceipts include the job ID, six-decimal USDC
+  amount, wallet addresses, contract, transaction hashes, and Arcscan URL.
+- Deterministic Circle UUIDv4 idempotency keys per instruction step, plus
+  fail-closed handling for pending, reverted, wrong-wallet, wrong-amount,
+  wrong-chain, and wrong-contract evidence.
 
 Not implemented:
 
-- A blockchain RPC, smart contract, wallet, signer, or real USDC transfer.
+- Mainnet, real customer funds, hardware signing, production custody, or a
+  browser one-click Arc transaction runner. The `/demo` page remains an
+  explicitly simulated proof surface.
 - General production authentication, tenant isolation, custody, issuing, or
   compliance controls. The hosted sandbox is one manually configured partner,
   not a self-serve or multi-tenant product.
 - Multiple rails, chains, currencies, evaluator marketplaces, or portable
   global reputation.
 
-The word `onchain` in this MVP always means the deterministic
-`simulated_onchain_v0` adapter. No real funds move.
+The default adapter remains `simulated_onchain_v0`. Arc execution is disabled
+unless the complete fixed testnet profile is configured server-side.
+
+## Arc Hackathon delta (2026-08-03)
+
+The new-work delta is the `arc_testnet_erc8183_v0` adapter and its independently
+fetched evidence. The pre-existing Mecharoon authority, reservation, evaluator,
+quarantine, receipt, and contextual-reputation kernel remains offchain.
+
+The executor is deliberately fixed to:
+
+- Arc Testnet chain ID `5042002` and RPC `https://rpc.testnet.arc.io`;
+- USDC `0x3600000000000000000000000000000000000000` with 6 decimals;
+- ERC-8183 proxy `0x0747EEf0706327138c69792bF28Cd525089e4583`;
+- one configured buyer, provider, and independent evaluator wallet;
+- `$5.00` as local `"500"`, converted exactly to `"5000000"` USDC atomic units.
+
+Circle credentials and wallet IDs stay in server environment variables. API
+callers cannot choose the chain, contract, wallet IDs, target addresses, ABI
+functions, or calldata. Each retry uses the same per-step Circle idempotency
+key, and local authority remains reserved until fetched Arc job state and
+completion logs match every committed field.
+
+To enable the testnet executor, copy the commented Arc block from
+`.env.example`, supply three funded Circle developer-controlled Arc Testnet
+wallets, then migrate the database. Do not enable the hosted sandbox or local
+one-click demo as an Arc runner; use the scoped work/submission/settlement APIs
+so every external mutation is explicit and inspect the resulting FinalReceipt
+through `GET /api/v0/work-orders/:id/receipt`.
 
 ## Architecture boundary
 
@@ -98,7 +139,7 @@ evidence, policy, receipts, and contextual reputation remain offchain.
 
 Requirements:
 
-- Node.js 20+
+- Node.js 22+
 - PostgreSQL 14+
 
 Create the two local databases:
@@ -194,8 +235,8 @@ All mutation endpoints require `Idempotency-Key`. Tokens are scoped by role:
 | `POST /api/v0/work-orders` | buyer | Reserve authority and create a WorkOrder |
 | `GET /api/v0/work-orders/:id` | buyer, seller, evaluator, operator | Inspect work state |
 | `POST /api/v0/work-orders/:id/submissions` | evaluator | Commit artifact evidence and run the declared deterministic policy |
-| `POST /api/v0/settlements/:id/execute` | operator | Execute the simulated adapter |
-| `POST /api/v0/settlements/:id/reconcile` | operator | Resolve an unknown observation |
+| `POST /api/v0/settlements/:id/execute` | operator | Execute the instruction's fixed adapter |
+| `POST /api/v0/settlements/:id/reconcile` | operator | Fetch back and reconcile unknown settlement evidence |
 | `GET /api/v0/work-orders/:id/receipt` | buyer, seller, operator | Read the FinalReceipt |
 | `GET /api/v0/authorities/:id/exposure` | scoped participant, operator | Read reserved and settled exposure |
 | `GET /api/v0/reputation/:subjectId` | scoped participant, operator | Derive contextual reputation |
@@ -241,6 +282,8 @@ npm run brand:export
 The suite covers:
 
 - bigint-safe amounts and deterministic hashing;
+- fixed Arc target/function allowlists, 6-decimal conversion, pending and
+  mismatch handling, and Circle-step idempotency;
 - `REVISE → PASS → unknown → confirmed`;
 - no receipt or reputation before confirmed reconciliation;
 - mismatched settlement remaining reserved for manual review;

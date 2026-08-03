@@ -1,23 +1,5 @@
 import { sha256 } from "../domain/hash";
-
-export type SimulatedInstruction = {
-  id: string;
-  instruction_hash: string;
-  amount_minor: string;
-  asset: "USDC";
-  payer_id: string;
-  payee_id: string;
-};
-
-export type SettlementObservation = {
-  adapterEventId: string;
-  state: "unknown" | "confirmed";
-  txHash: string | null;
-  amountMinor: string | null;
-  asset: string | null;
-  payerId: string | null;
-  payeeId: string | null;
-};
+import type { SettlementInstruction, SettlementObservation } from "./types";
 
 function eventId(instructionId: string, phase: "execute" | "reconcile"): string {
   return `sim_evt_${sha256({ instruction_id: instructionId, phase }).slice(0, 32)}`;
@@ -30,7 +12,7 @@ function transactionHash(instructionHash: string): string {
 }
 
 export function simulateSettlementExecution(
-  instruction: SimulatedInstruction,
+  instruction: SettlementInstruction,
   scenario: "confirmed" | "unknown",
 ): SettlementObservation {
   if (scenario === "unknown") {
@@ -42,6 +24,16 @@ export function simulateSettlementExecution(
       asset: null,
       payerId: null,
       payeeId: null,
+      payerAddress: null,
+      payeeAddress: null,
+      evaluatorAddress: null,
+      amountAtomic: null,
+      chainId: null,
+      contractAddress: null,
+      externalJobId: null,
+      externalStatus: null,
+      explorerUrl: null,
+      transactionHashes: [],
     };
   }
 
@@ -53,11 +45,21 @@ export function simulateSettlementExecution(
     asset: instruction.asset,
     payerId: instruction.payer_id,
     payeeId: instruction.payee_id,
+    payerAddress: null,
+    payeeAddress: null,
+    evaluatorAddress: null,
+    amountAtomic: null,
+    chainId: null,
+    contractAddress: null,
+    externalJobId: null,
+    externalStatus: "simulated_confirmed",
+    explorerUrl: null,
+    transactionHashes: [transactionHash(instruction.instruction_hash)],
   };
 }
 
 export function simulateSettlementReconciliation(
-  instruction: SimulatedInstruction,
+  instruction: SettlementInstruction,
   scenario: "confirmed" | "mismatch",
 ): SettlementObservation {
   const confirmed = {
@@ -68,6 +70,16 @@ export function simulateSettlementReconciliation(
     asset: instruction.asset,
     payerId: instruction.payer_id,
     payeeId: instruction.payee_id,
+    payerAddress: null,
+    payeeAddress: null,
+    evaluatorAddress: null,
+    amountAtomic: null,
+    chainId: null,
+    contractAddress: null,
+    externalJobId: null,
+    externalStatus: "simulated_confirmed",
+    explorerUrl: null,
+    transactionHashes: [transactionHash(instruction.instruction_hash)],
   };
 
   if (scenario === "mismatch") {

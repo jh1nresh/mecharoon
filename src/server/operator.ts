@@ -19,18 +19,24 @@ import {
 } from "./domain/schemas";
 import { buildFinalReceipt } from "./receipts/final-receipt";
 import type { SettlementResource } from "./resources";
+import { createArcAdapterFromEnvironment } from "./settlement/arc-erc8183";
 import {
   simulateSettlementExecution,
   simulateSettlementReconciliation,
-  type SettlementObservation,
-  type SimulatedInstruction,
 } from "./settlement/simulated-onchain";
+import { ARC_TESTNET } from "./settlement/profile";
+import type {
+  SettlementAdapter,
+  SettlementInstruction,
+  SettlementObservation,
+} from "./settlement/types";
 
 type OperatorServiceOptions = {
   runtime?: Runtime;
+  arcAdapter?: SettlementAdapter;
 };
 
-type LockedSettlementRow = SimulatedInstruction & {
+type LockedSettlementRow = SettlementInstruction & {
   state: "instructed" | "submitted" | "unknown" | "confirmed" | "manual_review";
   work_order_id: string;
   reservation_id: string;
@@ -54,20 +60,29 @@ type LockedSettlementRow = SimulatedInstruction & {
 async function loadInstruction(
   pool: Pool,
   instructionId: string,
-): Promise<SimulatedInstruction & { state: string }> {
+): Promise<SettlementInstruction & { state: string }> {
   const result = await pool.query<
-    SimulatedInstruction & {
+    SettlementInstruction & {
       state: string;
     }
   >(
     `
       SELECT
         id,
+        adapter,
+        chain,
         instruction_hash,
+        verdict_hash,
+        deliverable_hash,
         amount_minor,
         asset,
         payer_id,
         payee_id,
+        payer_address,
+        payee_address,
+        evaluator_address,
+        contract_address,
+        expires_at,
         state
       FROM mecharoon.settlement_instructions
       WHERE id = $1
@@ -93,11 +108,19 @@ async function lockSettlement(
     `
       SELECT
         instruction.id,
+        instruction.adapter,
+        instruction.chain,
         instruction.instruction_hash,
+        instruction.verdict_hash,
+        instruction.deliverable_hash,
         instruction.amount_minor,
         instruction.asset,
         instruction.payer_id,
         instruction.payee_id,
+        instruction.payer_address,
+        instruction.payee_address,
+        instruction.evaluator_address,
+        instruction.contract_address,
         instruction.state,
         instruction.work_order_id,
         instruction.reservation_id,
@@ -211,13 +234,34 @@ function observationMatchesInstruction(
   observation: SettlementObservation,
   instruction: LockedSettlementRow,
 ): boolean {
-  return (
+  const localFieldsMatch =
     observation.state === "confirmed" &&
     observation.txHash !== null &&
     observation.amountMinor === BigInt(instruction.amount_minor).toString() &&
     observation.asset === instruction.asset &&
     observation.payerId === instruction.payer_id &&
-    observation.payeeId === instruction.payee_id
+    observation.payeeId === instruction.payee_id;
+  if (!localFieldsMatch) {
+    return false;
+  }
+  if (instruction.adapter === "simulated_onchain_v0") {
+    return true;
+  }
+  return (
+    observation.amountAtomic ===
+      (BigInt(instruction.amount_minor) * BigInt(10_000)).toString() &&
+    observation.chainId === ARC_TESTNET.chainId &&
+    observation.externalJobId !== null &&
+    observation.externalStatus === "3" &&
+    observation.payerAddress?.toLowerCase() ===
+      instruction.payer_address?.toLowerCase() &&
+    observation.payeeAddress?.toLowerCase() ===
+      instruction.payee_address?.toLowerCase() &&
+    observation.evaluatorAddress?.toLowerCase() ===
+      instruction.evaluator_address?.toLowerCase() &&
+    observation.contractAddress?.toLowerCase() ===
+      instruction.contract_address?.toLowerCase() &&
+    observation.explorerUrl !== null
   );
 }
 
@@ -240,9 +284,22 @@ async function insertSettlementRecord(
         observed_asset,
         observed_payer_id,
         observed_payee_id,
+        observed_amount_atomic,
+        observed_payer_address,
+        observed_payee_address,
+        observed_evaluator_address,
+        observed_chain_id,
+        observed_contract_address,
+        external_job_id,
+        external_status,
+        explorer_url,
+        transaction_hashes,
         observed_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9,
+        $10, $11, $12, $13, $14, $15, $16, $17, $18, $19::jsonb, $20
+      )
       ON CONFLICT (adapter_event_id) DO NOTHING
     `,
     [
@@ -255,6 +312,16 @@ async function insertSettlementRecord(
       observation.asset,
       observation.payerId,
       observation.payeeId,
+      observation.amountAtomic,
+      observation.payerAddress,
+      observation.payeeAddress,
+      observation.evaluatorAddress,
+      observation.chainId,
+      observation.contractAddress,
+      observation.externalJobId,
+      observation.externalStatus,
+      observation.explorerUrl,
+      JSON.stringify(observation.transactionHashes),
       runtime.now(),
     ],
   );
@@ -380,12 +447,32 @@ async function applyObservation(
           asset: instruction.asset,
           payer_id: instruction.payer_id,
           payee_id: instruction.payee_id,
+          amount_atomic:
+            instruction.adapter === "arc_testnet_erc8183_v0"
+              ? (BigInt(instruction.amount_minor) * BigInt(10_000)).toString()
+              : null,
+          payer_address: instruction.payer_address,
+          payee_address: instruction.payee_address,
+          evaluator_address: instruction.evaluator_address,
+          chain_id:
+            instruction.adapter === "arc_testnet_erc8183_v0"
+              ? ARC_TESTNET.chainId
+              : null,
+          contract_address: instruction.contract_address,
         },
         observed: {
           amount_minor: observation.amountMinor,
           asset: observation.asset,
           payer_id: observation.payerId,
           payee_id: observation.payeeId,
+          amount_atomic: observation.amountAtomic,
+          payer_address: observation.payerAddress,
+          payee_address: observation.payeeAddress,
+          evaluator_address: observation.evaluatorAddress,
+          chain_id: observation.chainId,
+          contract_address: observation.contractAddress,
+          external_job_id: observation.externalJobId,
+          external_status: observation.externalStatus,
         },
       },
     });
@@ -471,10 +558,10 @@ async function applyObservation(
   await client.query(
     `
       UPDATE mecharoon.settlement_instructions
-      SET state = 'confirmed', updated_at = $2
+      SET state = 'confirmed', external_job_id = $2, updated_at = $3
       WHERE id = $1
     `,
-    [instruction.id, settledAt],
+    [instruction.id, observation.externalJobId, settledAt],
   );
   await client.query(
     `
@@ -563,6 +650,18 @@ async function applyObservation(
       amount_minor: amountMinor.toString(),
       payer_id: instruction.payer_id,
       payee_id: instruction.payee_id,
+      adapter: instruction.adapter,
+      chain: instruction.chain,
+      amount_atomic: observation.amountAtomic,
+      payer_address: observation.payerAddress,
+      payee_address: observation.payeeAddress,
+      evaluator_address: observation.evaluatorAddress,
+      chain_id: observation.chainId,
+      contract_address: observation.contractAddress,
+      external_job_id: observation.externalJobId,
+      external_status: observation.externalStatus,
+      explorer_url: observation.explorerUrl,
+      transaction_hashes: observation.transactionHashes,
     },
     txHash: observation.txHash,
     finalizedAt: settledAt,
@@ -606,7 +705,7 @@ async function applyObservation(
       )
       VALUES (
         $1, $2, $3, 'seller', 'coding', $4,
-        'simulated_onchain_confirmed', 'pass', $5, $6
+        $5, 'pass', $6, $7
       )
     `,
     [
@@ -614,6 +713,9 @@ async function applyObservation(
       receiptId,
       instruction.seller_id,
       submission.evaluator_policy_hash,
+      instruction.adapter === "arc_testnet_erc8183_v0"
+        ? "arc_testnet_erc8183_confirmed"
+        : "simulated_onchain_confirmed",
       revisionCount,
       settledAt,
     ],
@@ -653,6 +755,10 @@ export function createOperatorService(
   options: OperatorServiceOptions = {},
 ) {
   const runtime = options.runtime ?? systemRuntime;
+
+  function arcAdapter(): SettlementAdapter {
+    return options.arcAdapter ?? createArcAdapterFromEnvironment();
+  }
 
   async function applyOperatorObservation(input: {
     instructionId: string;
@@ -744,15 +850,20 @@ export function createOperatorService(
         instruction_id: parsed.instruction_id,
         scenario: parsed.scenario,
       });
+      const observation =
+        instruction.state === "confirmed" ||
+        instruction.state === "manual_review" ||
+        instruction.state === "unknown"
+          ? simulateSettlementExecution(instruction, "unknown")
+          : instruction.adapter === "arc_testnet_erc8183_v0"
+            ? await arcAdapter().execute(instruction)
+            : simulateSettlementExecution(instruction, parsed.scenario);
       return applyOperatorObservation({
         instructionId: parsed.instruction_id,
         idempotencyKey: parsed.idempotency_key,
         requestHash,
         scope: `execute_settlement:${parsed.instruction_id}`,
-        observation: simulateSettlementExecution(
-          instruction,
-          parsed.scenario,
-        ),
+        observation,
         operation: "execute",
       });
     },
@@ -766,15 +877,19 @@ export function createOperatorService(
         instruction_id: parsed.instruction_id,
         scenario: parsed.scenario,
       });
+      const observation =
+        instruction.state === "confirmed" ||
+        instruction.state === "manual_review"
+          ? simulateSettlementExecution(instruction, "unknown")
+          : instruction.adapter === "arc_testnet_erc8183_v0"
+            ? await arcAdapter().reconcile(instruction)
+            : simulateSettlementReconciliation(instruction, parsed.scenario);
       return applyOperatorObservation({
         instructionId: parsed.instruction_id,
         idempotencyKey: parsed.idempotency_key,
         requestHash,
         scope: `reconcile_settlement:${parsed.instruction_id}`,
-        observation: simulateSettlementReconciliation(
-          instruction,
-          parsed.scenario,
-        ),
+        observation,
         operation: "reconcile",
       });
     },

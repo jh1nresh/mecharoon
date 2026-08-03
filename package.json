@@ -2,6 +2,9 @@
   "name": "mecharoon",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
@@ -21,12 +24,14 @@
     "brand:export": "node scripts/export-brand.mjs"
   },
   "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^10.8.0",
     "lucide-react": "^1.27.0",
     "motion": "^12.35.0",
     "next": "16.2.11",
     "pg": "^8.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "viem": "^2.55.10",
     "zod": "^4.4.3"
   },
   "devDependencies": {

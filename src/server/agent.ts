@@ -25,9 +25,14 @@ import {
 } from "./evaluation/coding-v0";
 import { loadCodingReputationView } from "./reputation/query";
 import type { SubmissionResource, WorkOrderResource } from "./resources";
+import {
+  settlementProfileFromEnvironment,
+  type SettlementProfile,
+} from "./settlement/profile";
 
 type AgentServiceOptions = {
   runtime?: Runtime;
+  settlementProfile?: SettlementProfile;
 };
 
 function workOrderResource(input: {
@@ -100,6 +105,8 @@ async function insertReserveLedgerEntries(
 
 export function createAgentService(pool: Pool, options: AgentServiceOptions = {}) {
   const runtime = options.runtime ?? systemRuntime;
+  const settlementProfile =
+    options.settlementProfile ?? settlementProfileFromEnvironment();
 
   return {
     async createWorkOrder(
@@ -547,6 +554,17 @@ export function createAgentService(pool: Pool, options: AgentServiceOptions = {}
             [parsed.work_order_id, runtime.now()],
           );
         } else {
+          if (
+            settlementProfile.adapter === "arc_testnet_erc8183_v0" &&
+            (work.buyer_id !== settlementProfile.buyerId ||
+              work.seller_id !== settlementProfile.sellerId)
+          ) {
+            throw new DomainError(
+              403,
+              "ARC_SETTLEMENT_PARTICIPANT_MISMATCH",
+              "The WorkOrder participants do not match the fixed Arc Testnet wallet mapping.",
+            );
+          }
           instructionId = runtime.id("si");
           const nonce = runtime.id("nonce");
           const expiresAt = addHours(runtime.now(), 1);
@@ -554,8 +572,8 @@ export function createAgentService(pool: Pool, options: AgentServiceOptions = {}
             instruction_id: instructionId,
             work_order_id: parsed.work_order_id,
             reservation_id: work.reservation_id,
-            adapter: "simulated_onchain_v0",
-            chain: "simulated",
+            adapter: settlementProfile.adapter,
+            chain: settlementProfile.chain,
             asset: "USDC",
             payer_id: work.buyer_id,
             payee_id: work.seller_id,
@@ -564,14 +582,22 @@ export function createAgentService(pool: Pool, options: AgentServiceOptions = {}
             policy_hash: work.acceptance_policy_hash,
             verdict_hash: verdict.verdictHash,
             nonce,
-            adapter_audience: "simulated-onchain-v0",
+            adapter_audience: settlementProfile.audience,
             expires_at: expiresAt.toISOString(),
           };
           const instructionHash = sha256(instructionPayload);
-          const simulatedSignature = sha256({
-            simulation_only: true,
+          const authorizationCommitment = sha256({
+            adapter: settlementProfile.adapter,
             instruction_hash: instructionHash,
           });
+          const simulatedSignature =
+            settlementProfile.adapter === "simulated_onchain_v0"
+              ? authorizationCommitment
+              : null;
+          const arcProfile =
+            settlementProfile.adapter === "arc_testnet_erc8183_v0"
+              ? settlementProfile
+              : null;
 
           await client.query(
             `
@@ -593,29 +619,45 @@ export function createAgentService(pool: Pool, options: AgentServiceOptions = {}
                 expires_at,
                 instruction_hash,
                 simulated_signature,
+                authorization_commitment,
+                deliverable_hash,
+                payer_address,
+                payee_address,
+                evaluator_address,
+                contract_address,
                 state,
                 created_at,
                 updated_at
               )
               VALUES (
-                $1, $2, $3, 'simulated_onchain_v0', 'simulated', 'USDC',
-                $4, $5, $6, 'pay', $7, $8, $9, 'simulated-onchain-v0',
-                $10, $11, $12, 'instructed', $13, $13
+                $1, $2, $3, $4, $5, 'USDC',
+                $6, $7, $8, 'pay', $9, $10, $11, $12,
+                $13, $14, $15, $16, $17, $18, $19, $20, $21,
+                'instructed', $22, $22
               )
             `,
             [
               instructionId,
               parsed.work_order_id,
               work.reservation_id,
+              settlementProfile.adapter,
+              settlementProfile.chain,
               work.buyer_id,
               work.seller_id,
               BigInt(work.amount_minor).toString(),
               work.acceptance_policy_hash,
               verdict.verdictHash,
               nonce,
+              settlementProfile.audience,
               expiresAt,
               instructionHash,
               simulatedSignature,
+              authorizationCommitment,
+              parsed.artifact_sha256,
+              arcProfile?.payerAddress ?? null,
+              arcProfile?.payeeAddress ?? null,
+              arcProfile?.evaluatorAddress ?? null,
+              arcProfile?.contractAddress ?? null,
               runtime.now(),
             ],
           );
@@ -639,7 +681,8 @@ export function createAgentService(pool: Pool, options: AgentServiceOptions = {}
               instruction_hash: instructionHash,
               amount_minor: BigInt(work.amount_minor).toString(),
               asset: "USDC",
-              chain: "simulated",
+              adapter: settlementProfile.adapter,
+              chain: settlementProfile.chain,
             },
           });
         }
