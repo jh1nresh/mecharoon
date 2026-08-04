@@ -80,24 +80,38 @@ async function main(): Promise<void> {
   }
   const [buyer, provider, evaluator] = wallets;
 
-  for (const wallet of wallets) {
+  let faucetFailed = false;
+  try {
+    for (const wallet of wallets) {
+      await client.requestTestnetTokens({
+        address: wallet.address,
+        blockchain: BLOCKCHAIN,
+        usdc: true,
+      });
+    }
+    // The buyer funds the $5 job and pays most of the gas; one extra drip.
     await client.requestTestnetTokens({
-      address: wallet.address,
+      address: buyer.address,
       blockchain: BLOCKCHAIN,
       usdc: true,
     });
+  } catch {
+    // Some API keys cannot use the faucet API; the console faucet page
+    // works regardless, so wallet output below must still print.
+    faucetFailed = true;
   }
-  // The buyer funds the $5 job and pays most of the gas; one extra drip.
-  await client.requestTestnetTokens({
-    address: buyer.address,
-    blockchain: BLOCKCHAIN,
-    usdc: true,
-  });
 
   const lines = [
     '',
     'Provisioned three Circle developer-controlled EOA wallets on Arc',
-    'Testnet and requested faucet USDC for each.',
+    'Testnet.',
+    ...(faucetFailed
+      ? [
+          'Faucet API returned an error (some keys cannot use it). Use the',
+          'console Faucet page instead: Arc Testnet + USDC to each address',
+          'below, with an extra drip for the buyer.',
+        ]
+      : ['Requested faucet USDC for each wallet.']),
     '',
     '# Append to .env.local (server-only values; never NEXT_PUBLIC_*):',
     'MECHAROON_SETTLEMENT_ADAPTER=arc_testnet_erc8183_v0',
