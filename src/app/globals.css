@@ -519,22 +519,22 @@ button {
   font-weight: 600;
 }
 
-.flow-stage-define {
+.flow-stage-start {
   bottom: 112px;
   left: 30px;
 }
 
-.flow-stage-reserve {
+.flow-stage-mid {
   top: 88px;
   left: 294px;
 }
 
-.flow-stage-reconcile {
+.flow-stage-end {
   right: 74px;
   bottom: 96px;
 }
 
-.flow-stage-reconcile > b {
+.flow-stage-end > b {
   color: var(--reserve);
 }
 
@@ -695,6 +695,38 @@ button {
   color: var(--reserve);
 }
 
+.proof-arcline {
+  position: absolute;
+  bottom: 26px;
+  left: 28px;
+  z-index: 5;
+  display: grid;
+  gap: 4px;
+  max-width: 46%;
+  border: 1px solid rgba(25, 40, 55, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(247, 245, 242, 0.88);
+  font-family: var(--font-mono), monospace;
+}
+
+.proof-arcline span {
+  color: rgba(25, 40, 55, 0.55);
+  font-size: 8px;
+  letter-spacing: 0.09em;
+}
+
+.proof-arcline strong {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.proof-arcline small {
+  color: rgba(25, 40, 55, 0.62);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
 .evidence-receipt-sheet {
   position: absolute;
   right: 28px;
@@ -831,6 +863,17 @@ button {
 .boundary-work {
   top: 246px;
   right: 118px;
+}
+
+.boundary-denied {
+  top: 84px;
+  left: 46px;
+  border-color: rgba(198, 61, 49, 0.32);
+  background: var(--status-fail-pale);
+}
+
+.boundary-denied strong {
+  color: var(--status-fail);
 }
 
 .boundary-transaction {
@@ -1169,17 +1212,17 @@ footer {
     font-size: 9px;
   }
 
-  .flow-stage-define {
+  .flow-stage-start {
     bottom: 78px;
     left: 12px;
   }
 
-  .flow-stage-reserve {
+  .flow-stage-mid {
     top: 68px;
     left: 132px;
   }
 
-  .flow-stage-reconcile {
+  .flow-stage-end {
     right: 14px;
     bottom: 72px;
   }
@@ -1252,6 +1295,13 @@ footer {
     padding: 10px 11px;
   }
 
+  .proof-arcline {
+    bottom: 78px;
+    left: 14px;
+    max-width: calc(100% - 28px);
+    padding: 9px 11px;
+  }
+
   .receipt-check {
     width: 29px;
     height: 29px;
@@ -1295,6 +1345,11 @@ footer {
   .boundary-work {
     top: 170px;
     right: 45px;
+  }
+
+  .boundary-denied {
+    top: 44px;
+    left: 14px;
   }
 
   .boundary-transaction {

@@ -2,6 +2,13 @@
 
 ## Design Thesis
 
+Chapter order (2026-08-03): 01 Authority boundary (intake gate, includes the
+`$8.00 DENIED` refusal), 02 Control loop (`RESERVE → VERIFY REVISE→PASS →
+RECONCILE quarantined→confirmed`), 03 Developer proof (API ledger + opt-in Arc
+Testnet ERC-8183 adapter chip; no fabricated onchain receipts — only the
+verified contract, chain ID, and call path are shown until a live Arc job
+exists).
+
 The Hero owns the cinematic 3D moment. The three following chapters explain
 Mecharoon with a quieter 2D financial-evidence system: one claim, one dominant
 object, one visible state transition, and one inspectable receipt per chapter.
