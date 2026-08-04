@@ -1,5 +1,16 @@
 # Mecharoon Brand System
 
+> Marketing-surface addendum (2026-08-03): the public landing page follows the
+> editorial-evidence direction shipped in PRs #9–#12 (2026-07-28/29), which
+> extends this system for that surface only: Purple `#7342E2` marks CTAs and
+> in-flight delegated work, soft warm-field gradients are allowed as
+> environment (never on the mark), headings and body use Inter via `next/font`
+> with Geist Mono for evidence labels. Reserved Green keeps its state-bearing
+> meaning everywhere. The cinematic hero video (glass tokens) is a deliberate
+> founder exception to the "no coins / no glassmorphism" rules below and is
+> under review. Product UI and the mark itself still follow this document
+> as written.
+
 ## Brand overview
 
 **Product:** Mecharoon

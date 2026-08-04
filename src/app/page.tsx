@@ -3,22 +3,14 @@
 import Image from 'next/image';
 import {useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
-import {
-  ArrowRightCircle,
-  Fingerprint,
-  LockKeyhole,
-  Menu,
-  X,
-  Zap,
-} from 'lucide-react';
+import {ArrowRightCircle, Menu, X} from 'lucide-react';
 
-const heroVideoUrl =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_003132_8b7edcb6-c64d-4a52-a9ca-879942e122ad.mp4';
+const heroVideoUrl = '/media/hero/mecharoon-money-flow.mp4';
 
 const heroNavLinks = [
+  {label: 'Boundary', href: '#boundary'},
   {label: 'Control loop', href: '#flow'},
   {label: 'Proof', href: '#proof'},
-  {label: 'Boundary', href: '#boundary'},
   {label: 'Demo', href: '/demo'},
   {label: 'GitHub', href: 'https://github.com/jh1nresh/mecharoon'},
 ];
@@ -370,7 +362,7 @@ function ControlLoopSection({
     <motion.section
       className="evidence-chapter evidence-control"
       id="flow"
-      data-chapter="01"
+      data-chapter="02"
       initial={reducedMotion ? 'visible' : 'hidden'}
       whileInView="visible"
       viewport={{once: true, amount: 0.2}}
@@ -402,8 +394,8 @@ function ControlLoopSection({
         </motion.div>
 
         <MicroTransfer
-          label="Work order"
-          value="W-0187"
+          label="Committed evidence"
+          value="3 facts"
           reducedMotion={reducedMotion}
         />
 
@@ -459,25 +451,25 @@ function ControlLoopSection({
             )}
           </svg>
 
-          <div className="flow-stage flow-stage-define">
+          <div className="flow-stage flow-stage-start">
             <b>01</b>
-            <div>
-              <small>DEFINE</small>
-              <strong>$15 authority</strong>
-            </div>
-          </div>
-          <div className="flow-stage flow-stage-reserve">
-            <b>02</b>
             <div>
               <small>RESERVE</small>
               <strong>$5 held open</strong>
             </div>
           </div>
-          <div className="flow-stage flow-stage-reconcile">
+          <div className="flow-stage flow-stage-mid">
+            <b>02</b>
+            <div>
+              <small>VERIFY</small>
+              <strong>REVISE → PASS</strong>
+            </div>
+          </div>
+          <div className="flow-stage flow-stage-end">
             <b>03</b>
             <div>
               <small>RECONCILE</small>
-              <strong>PASS observed</strong>
+              <strong>quarantined → confirmed</strong>
             </div>
           </div>
 
@@ -489,8 +481,8 @@ function ControlLoopSection({
         </motion.div>
 
         <ChapterFooter
-          lead="Authority → reserve → verdict → receipt"
-          chapter="01 / Control loop"
+          lead="Unknown settlement stays quarantined until proven"
+          chapter="02 / Control loop"
         />
       </div>
     </motion.section>
@@ -506,7 +498,7 @@ function DeveloperProofSection({
     <motion.section
       className="evidence-chapter evidence-proof"
       id="proof"
-      data-chapter="02"
+      data-chapter="03"
       initial={reducedMotion ? 'visible' : 'hidden'}
       whileInView="visible"
       viewport={{once: true, amount: 0.2}}
@@ -544,8 +536,8 @@ function DeveloperProofSection({
         </motion.div>
 
         <MicroTransfer
-          label="Committed evidence"
-          value="3 facts"
+          label="Final receipt"
+          value="R-0187"
           reducedMotion={reducedMotion}
         />
 
@@ -605,6 +597,12 @@ function DeveloperProofSection({
             </div>
           </dl>
 
+          <div className="proof-arcline">
+            <span>OPT-IN SETTLEMENT ADAPTER</span>
+            <strong>ARC TESTNET · ERC-8183</strong>
+            <small>chain 5042002 · 0x0747…4583 · USDC 6dp · testnet only</small>
+          </div>
+
           <div className="evidence-receipt-sheet">
             <span className="receipt-check">✓</span>
             <small>FINAL RECEIPT</small>
@@ -615,7 +613,7 @@ function DeveloperProofSection({
 
         <ChapterFooter
           lead="Illustrative sandbox · no funds moved"
-          chapter="02 / Developer proof"
+          chapter="03 / Developer proof"
         />
       </div>
     </motion.section>
@@ -631,7 +629,7 @@ function ExpressiveBoundarySection({
     <motion.section
       className="evidence-chapter evidence-boundary"
       id="boundary"
-      data-chapter="03"
+      data-chapter="01"
       initial={reducedMotion ? 'visible' : 'hidden'}
       whileInView="visible"
       viewport={{once: true, amount: 0.2}}
@@ -657,20 +655,20 @@ function ExpressiveBoundarySection({
             <span>a boundary.</span>
           </h2>
           <p>
-            Delegate only what the job needs. Reserve one amount. Release
-            payment only after the committed evidence passes.
+            Delegate only what the job needs. Reserve one amount. Anything
+            outside the boundary is refused before money moves.
           </p>
           <SectionActions
             primaryLabel="See one job clear"
             primaryHref="/demo"
-            secondaryLabel="Explore architecture"
+            secondaryLabel="Follow the loop"
             secondaryHref="#flow"
           />
         </motion.div>
 
         <MicroTransfer
-          label="Final receipt"
-          value="R-0187"
+          label="Work order"
+          value="W-0187"
           reducedMotion={reducedMotion}
         />
 
@@ -816,6 +814,10 @@ function ExpressiveBoundarySection({
             <small>WORK ORDER</small>
             <strong>W-0187</strong>
           </div>
+          <div className="boundary-label boundary-denied">
+            <small>NEW SELLER</small>
+            <strong>$8.00 · DENIED</strong>
+          </div>
 
           <div className="boundary-transaction">
             <span />
@@ -830,8 +832,8 @@ function ExpressiveBoundarySection({
         </motion.div>
 
         <ChapterFooter
-          lead="Delegate only what the work requires"
-          chapter="03 / Authority boundary"
+          lead="Refused at the gate, not refunded after"
+          chapter="01 / Authority boundary"
         />
       </div>
     </motion.section>
@@ -884,23 +886,23 @@ export default function Home() {
 
           <div className="vault-hero-inner">
             <div className="vault-hero-copy">
+              <motion.span
+                className="vault-hero-kicker"
+                custom={0}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <i /> Agent spend control plane
+              </motion.span>
+
               <motion.h1
                 custom={0}
                 variants={fadeUp}
                 initial="hidden"
                 animate="visible"
               >
-                <Zap className="vault-heading-icon" aria-hidden="true" />
-                <span>Verify agent work.</span>
-                <LockKeyhole
-                  className="vault-heading-icon"
-                  aria-hidden="true"
-                />
-                <span>Then pay.</span>
-                <Fingerprint
-                  className="vault-heading-icon"
-                  aria-hidden="true"
-                />
+                <span>Verify agent work.</span> <span>Then pay.</span>
               </motion.h1>
 
               <motion.p
@@ -915,28 +917,35 @@ export default function Home() {
                 payment only when the work passes.
               </motion.p>
 
-              <motion.a
-                className="vault-hero-cta"
-                href="#pilot"
+              <motion.div
+                className="vault-hero-actions"
                 custom={2}
                 variants={fadeUp}
                 initial="hidden"
                 animate="visible"
-                whileHover={{scale: 1.04, filter: 'brightness(1.1)'}}
-                whileTap={{scale: 0.96}}
               >
-                <span>Join the pilot</span>
-                <ArrowRightCircle size={20} aria-hidden="true" />
-              </motion.a>
+                <motion.a
+                  className="vault-hero-cta"
+                  href="#pilot"
+                  whileHover={{scale: 1.04, filter: 'brightness(1.1)'}}
+                  whileTap={{scale: 0.96}}
+                >
+                  <span>Join the pilot</span>
+                  <ArrowRightCircle size={20} aria-hidden="true" />
+                </motion.a>
+                <a className="vault-hero-secondary" href="/demo">
+                  Watch one job clear
+                </a>
+              </motion.div>
             </div>
           </div>
         </section>
 
+        <ExpressiveBoundarySection reducedMotion={reducedMotion} />
+
         <ControlLoopSection reducedMotion={reducedMotion} />
 
         <DeveloperProofSection reducedMotion={reducedMotion} />
-
-        <ExpressiveBoundarySection reducedMotion={reducedMotion} />
 
         <section className="pilot-section" id="pilot">
           <div className="shell pilot-inner">
@@ -958,6 +967,10 @@ export default function Home() {
                 Request pilot access
               </a>
               <span>Single workflow · simulated funds · direct founder support</span>
+              <span>
+                Week one: your authority tree mapped, one job cleared end to
+                end, and a receipt schema your finance team can file.
+              </span>
             </div>
           </div>
         </section>

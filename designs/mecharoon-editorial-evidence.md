@@ -2,6 +2,13 @@
 
 ## Design Thesis
 
+Chapter order (2026-08-03): 01 Authority boundary (intake gate, includes the
+`$8.00 DENIED` refusal), 02 Control loop (`RESERVE → VERIFY REVISE→PASS →
+RECONCILE quarantined→confirmed`), 03 Developer proof (API ledger + opt-in Arc
+Testnet ERC-8183 adapter chip; no fabricated onchain receipts — only the
+verified contract, chain ID, and call path are shown until a live Arc job
+exists).
+
 The Hero owns the cinematic 3D moment. The three following chapters explain
 Mecharoon with a quieter 2D financial-evidence system: one claim, one dominant
 object, one visible state transition, and one inspectable receipt per chapter.
@@ -67,14 +74,17 @@ must never be implied through color alone.
 ## Assets and Ownership
 
 - Existing Mecharoon symbol, wordmark, Hero video, and poster remain unchanged.
+- The hero video is self-hosted at `public/media/hero/mecharoon-money-flow.mp4`
+  (2026-08-03; previously a third-party CloudFront URL).
 - Lower chapters use native React, SVG, CSS, and `motion/react`; no generated
   image is shipped.
-- The externally hosted display font remains the known durability risk.
 
 ## Exact Copy and Typography
 
-- Heading: existing `Helvetica Now Display Bold` route.
-- Body: Inter.
+- Heading: Inter `700` tight-tracked via `next/font` (replaced the externally
+  hosted `Helvetica Now Display Bold` on 2026-08-03 for licensing and
+  durability; keep negative letter-spacing to preserve the display feel).
+- Body: Inter via `next/font`.
 - Technical labels: existing project mono stack.
 - Current claims and the simulated-settlement disclaimer remain unchanged.
 
