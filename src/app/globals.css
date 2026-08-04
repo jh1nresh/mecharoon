@@ -710,10 +710,28 @@ button {
   font-family: var(--font-mono), monospace;
 }
 
+.proof-arcline {
+  transition: border-color 160ms ease;
+}
+
+.proof-arcline:hover {
+  border-color: rgba(44, 117, 95, 0.45);
+}
+
 .proof-arcline span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: rgba(25, 40, 55, 0.55);
   font-size: 8px;
   letter-spacing: 0.09em;
+}
+
+.proof-arcline span i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--reserve);
 }
 
 .proof-arcline strong {
@@ -1743,6 +1761,30 @@ footer {
 
 .vault-hero-secondary:hover {
   filter: brightness(1.05);
+}
+
+.vault-hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.vault-hero-status:hover {
+  color: var(--reserve-dark);
+}
+
+.vault-hero-status i {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--reserve);
 }
 
 @media (max-width: 1080px) {

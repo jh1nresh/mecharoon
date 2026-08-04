@@ -1,0 +1,74 @@
+FINAL RECEIPT (live Arc Testnet):
+{
+  "receipt_id": "receipt_29b3f4b99789457d9dbb8cb65fa75563",
+  "work_order_id": "wo_18948acedc4f44018f116bbca9bacb81",
+  "version": 1,
+  "receipt_hash": "cc11b184ac8b4df2dd3e6f11b5aeba9ed35c066c205679a33b1a185699c0af4c",
+  "receipt": {
+    "verdict": {
+      "outcome": "pass",
+      "reason_codes": [
+        "ALL_REQUIRED_CHECKS_PASSED"
+      ],
+      "revision_count": 1,
+      "evaluator_policy_hash": "89f1cb28170de141f8df965d7e3f68e8ba80019b720aa3a9f8360a84b078058f"
+    },
+    "authority": {
+      "lineage": [
+        "authority_arclive1785863728738_root",
+        "authority_arclive1785863728738_child"
+      ],
+      "leaf_grant_id": "authority_arclive1785863728738_child",
+      "reservation_id": "res_7de3051d0f8540b8bb4f7db5239ba5b8"
+    },
+    "receipt_id": "receipt_29b3f4b99789457d9dbb8cb65fa75563",
+    "settlement": {
+      "asset": "USDC",
+      "chain": "arc_testnet",
+      "adapter": "arc_testnet_erc8183_v0",
+      "tx_hash": "0x351f3d9deeec03e88fba888e89b3bcde2b1d6757829d2e086186466a3de4796b",
+      "chain_id": 5042002,
+      "finality": "arc_testnet_confirmed",
+      "payee_id": "participant_arclive1785863728738_seller",
+      "payer_id": "participant_arclive1785863728738_buyer",
+      "amount_minor": "500",
+      "explorer_url": "https://testnet.arcscan.app/tx/0x351f3d9deeec03e88fba888e89b3bcde2b1d6757829d2e086186466a3de4796b",
+      "amount_atomic": "5000000",
+      "payee_address": "0x9CAffDA7c238CbcabcF9f4B1184D4B11994515bE",
+      "payer_address": "0xC9E33B1Ef47c9e28Ca144ca826936e746b0BDDB6",
+      "instruction_id": "si_5ab15d6ddf0341249edc8dbafd1131ee",
+      "external_job_id": "167406",
+      "external_status": "3",
+      "contract_address": "0x0747EEf0706327138c69792bF28Cd525089e4583",
+      "instruction_hash": "caf3cb7016e5eea28481ec449365117977e26c10ad78a212a2437022b4768b3b",
+      "evaluator_address": "0xb3031A95f89A710ec9F69211dd0DCA9dE121A8D0",
+      "transaction_hashes": [
+        "0xd1f1dec6dce3b7d916f92a2238ce4dbd0a95e3629e58d6c607f7428801559620",
+        "0x44aa5585de1126718ba79b2606fb2abce3f8bd79c31c754aef2912256a4a7472",
+        "0xf4eba81adcaeadc558123ee647128205efa1c0791f93b2a3cb5b3d3543e786fa",
+        "0xbe20665e584b65679447218a9be596559d14c1a886e73d3cb05ee6a0fc03a553",
+        "0x4c7adad721ecad922bb2e625300911ff9770e7aafeb8be2d00b39f36d1e381b7",
+        "0x351f3d9deeec03e88fba888e89b3bcde2b1d6757829d2e086186466a3de4796b"
+      ]
+    },
+    "submission": {
+      "sequence": 2,
+      "artifact_ref": "demo://artifact/arclive1785863728738/pass",
+      "artifact_sha256": "c85bd2307c62fc23eff9f28106316dc6213b44ab9dfcde562931ccbdbc74b878"
+    },
+    "work_order": {
+      "id": "wo_18948acedc4f44018f116bbca9bacb81",
+      "domain": "coding",
+      "buyer_id": "participant_arclive1785863728738_buyer",
+      "currency": "USD",
+      "task_ref": "demo://coding/arclive1785863728738/live",
+      "seller_id": "participant_arclive1785863728738_seller",
+      "amount_minor": "500",
+      "acceptance_policy_id": "required-checks-v1",
+      "acceptance_policy_hash": "89f1cb28170de141f8df965d7e3f68e8ba80019b720aa3a9f8360a84b078058f",
+      "acceptance_policy_version": 1
+    },
+    "finalized_at": "2026-08-04T17:16:27.853Z",
+    "schema_version": "mecharoon.final-receipt.v0"
+  }
+}

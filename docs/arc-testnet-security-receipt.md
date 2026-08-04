@@ -75,6 +75,20 @@ still required to verify the native USDC transfer boundary.
 
 ## Residual risk and live blocker
 
+Update 2026-08-04: the first live Arc Testnet job completed end to end with
+dedicated Circle testnet wallets. Job `167406`, `$5.00` (`5000000` atomic
+USDC), six transactions from `createJob` through `complete`, completion
+confirmed on-chain (status `0x1`); FinalReceipt read back from PostgreSQL and
+archived at `docs/arc-first-live-receipt-2026-08-04.json.txt` (public chain
+evidence only). The run also caught and fixed an adapter defect: the
+job-ID parameter patch was overwriting the `approve` spender address
+(`ABI_SIGNATURE_PARAMS_MISMATCH`); the failed instruction stayed correctly
+quarantined and no funds moved, which exercised the fail-closed path with
+real settlement for the first time. A regression assertion now pins every
+step's first ABI parameter.
+
+The paragraph below is the original pre-live note, kept for history:
+
 No live Arc job was created in this change because no project-specific Circle
 API key, entity secret, three Arc Testnet wallet IDs, or funded test-USDC wallet
 set was supplied. Therefore there is no truthful Arc job ID, transaction hash,
