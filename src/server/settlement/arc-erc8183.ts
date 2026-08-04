@@ -319,7 +319,9 @@ export class ArcErc8183SettlementAdapter implements SettlementAdapter {
       step.parameters = step.parameters.map((parameter) =>
         parameter === undefined ? jobId?.toString() : parameter,
       );
-      if (step.name !== "create") {
+      // The approve step's first parameter is the ERC-8183 spender address;
+      // only the job-scoped calls take the job ID first.
+      if (step.name !== "create" && step.name !== "approve") {
         step.parameters[0] = jobId?.toString();
       }
 
