@@ -597,11 +597,18 @@ function DeveloperProofSection({
             </div>
           </dl>
 
-          <div className="proof-arcline">
-            <span>OPT-IN SETTLEMENT ADAPTER</span>
-            <strong>ARC TESTNET · ERC-8183</strong>
-            <small>chain 5042002 · 0x0747…4583 · USDC 6dp · testnet only</small>
-          </div>
+          <a
+            className="proof-arcline"
+            href="https://testnet.arcscan.app/tx/0x351f3d9deeec03e88fba888e89b3bcde2b1d6757829d2e086186466a3de4796b"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>
+              <i /> LIVE SETTLEMENT · ARC TESTNET
+            </span>
+            <strong>JOB 167406 · $5.00 CLEARED</strong>
+            <small>ERC-8183 · 6 txs · verify on Arcscan ↗ · testnet only</small>
+          </a>
 
           <div className="evidence-receipt-sheet">
             <span className="receipt-check">✓</span>
@@ -612,7 +619,7 @@ function DeveloperProofSection({
         </motion.div>
 
         <ChapterFooter
-          lead="Illustrative sandbox · no funds moved"
+          lead="Illustrative ledger · live settlement on Arc Testnet only"
           chapter="03 / Developer proof"
         />
       </div>
@@ -937,6 +944,17 @@ export default function Home() {
                   Watch one job clear
                 </a>
               </motion.div>
+
+              <motion.a
+                className="vault-hero-status"
+                href="#proof"
+                custom={3}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <i /> First live job cleared on Arc Testnet · $5.00 · ERC-8183
+              </motion.a>
             </div>
           </div>
         </section>
