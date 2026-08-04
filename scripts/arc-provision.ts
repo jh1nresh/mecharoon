@@ -27,11 +27,26 @@ async function main(): Promise<void> {
   if (!entitySecret) {
     entitySecret = crypto.randomBytes(32).toString('hex');
     generatedEntitySecret = true;
-    await registerEntitySecretCiphertext({
-      apiKey,
-      entitySecret,
-      recoveryFileDownloadPath: '.tmp',
-    });
+    try {
+      await registerEntitySecretCiphertext({
+        apiKey,
+        entitySecret,
+        recoveryFileDownloadPath: '.tmp',
+      });
+    } catch (error) {
+      if ((error as {code?: number}).code === 156015) {
+        fail(
+          'This Circle account already has an entity secret registered ' +
+            '(Circle stores only its hash, so it cannot be recovered from ' +
+            'the console). Find the 32-byte hex you saved when you first ' +
+            'configured developer-controlled wallets, set it as ' +
+            'CIRCLE_ENTITY_SECRET in .env.local, and rerun. If it is lost, ' +
+            'reset it in the console with your recovery file ' +
+            '(console.circle.com -> Configurator -> Entity Secret).',
+        );
+      }
+      throw error;
+    }
   }
 
   const client = initiateDeveloperControlledWalletsClient({
