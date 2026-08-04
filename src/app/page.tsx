@@ -3,14 +3,7 @@
 import Image from 'next/image';
 import {useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
-import {
-  ArrowRightCircle,
-  Fingerprint,
-  LockKeyhole,
-  Menu,
-  X,
-  Zap,
-} from 'lucide-react';
+import {ArrowRightCircle, Menu, X} from 'lucide-react';
 
 const heroVideoUrl =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_003132_8b7edcb6-c64d-4a52-a9ca-879942e122ad.mp4';
@@ -884,23 +877,23 @@ export default function Home() {
 
           <div className="vault-hero-inner">
             <div className="vault-hero-copy">
+              <motion.span
+                className="vault-hero-kicker"
+                custom={0}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <i /> Agent spend control plane
+              </motion.span>
+
               <motion.h1
                 custom={0}
                 variants={fadeUp}
                 initial="hidden"
                 animate="visible"
               >
-                <Zap className="vault-heading-icon" aria-hidden="true" />
-                <span>Verify agent work.</span>
-                <LockKeyhole
-                  className="vault-heading-icon"
-                  aria-hidden="true"
-                />
-                <span>Then pay.</span>
-                <Fingerprint
-                  className="vault-heading-icon"
-                  aria-hidden="true"
-                />
+                <span>Verify agent work.</span> <span>Then pay.</span>
               </motion.h1>
 
               <motion.p
@@ -915,19 +908,26 @@ export default function Home() {
                 payment only when the work passes.
               </motion.p>
 
-              <motion.a
-                className="vault-hero-cta"
-                href="#pilot"
+              <motion.div
+                className="vault-hero-actions"
                 custom={2}
                 variants={fadeUp}
                 initial="hidden"
                 animate="visible"
-                whileHover={{scale: 1.04, filter: 'brightness(1.1)'}}
-                whileTap={{scale: 0.96}}
               >
-                <span>Join the pilot</span>
-                <ArrowRightCircle size={20} aria-hidden="true" />
-              </motion.a>
+                <motion.a
+                  className="vault-hero-cta"
+                  href="#pilot"
+                  whileHover={{scale: 1.04, filter: 'brightness(1.1)'}}
+                  whileTap={{scale: 0.96}}
+                >
+                  <span>Join the pilot</span>
+                  <ArrowRightCircle size={20} aria-hidden="true" />
+                </motion.a>
+                <a className="vault-hero-secondary" href="/demo">
+                  Watch one job clear
+                </a>
+              </motion.div>
             </div>
           </div>
         </section>

@@ -1,9 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
 :root {
   --font-heading: "Helvetica Now Display Bold", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-body: var(--font-inter), "Inter", sans-serif;
   --color-text: #192837;
   --color-accent: #7342e2;
   --color-login-bg: #f2f2ee;
@@ -1566,6 +1565,19 @@ footer {
   height: 100%;
 }
 
+/* Legibility scrim: hero copy must survive every video frame. */
+.vault-hero-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    92deg,
+    rgba(240, 237, 233, 0.92) 0%,
+    rgba(240, 237, 233, 0.66) 34%,
+    rgba(240, 237, 233, 0) 60%
+  );
+}
+
 .vault-hero-video {
   object-fit: cover;
   object-position: center center;
@@ -1587,6 +1599,25 @@ footer {
   width: min(100%, 560px);
 }
 
+.vault-hero-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.vault-hero-kicker i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
 .vault-hero h1 {
   max-width: 560px;
   margin: 0 0 24px;
@@ -1596,6 +1627,10 @@ footer {
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.05;
+}
+
+.vault-hero h1 span {
+  display: block;
 }
 
 .vault-heading-icon {
@@ -1612,11 +1647,19 @@ footer {
 .vault-hero-subcopy {
   max-width: 560px;
   margin: 0;
+  color: var(--ink-soft, #344850);
   font-family: var(--font-body);
   font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   font-weight: 400;
   line-height: 1.65;
-  opacity: 0.8;
+}
+
+.vault-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
 }
 
 .vault-hero-cta {
@@ -1626,7 +1669,6 @@ footer {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  margin-top: 32px;
   border-radius: 50px;
   padding: 17px 24px;
   background: var(--color-accent);
@@ -1635,6 +1677,24 @@ footer {
   font-family: var(--font-body);
   font-size: clamp(0.9rem, 2vw, 1rem);
   font-weight: 600;
+}
+
+.vault-hero-secondary {
+  display: inline-flex;
+  min-height: 54px;
+  align-items: center;
+  border-radius: 50px;
+  padding: 17px 24px;
+  background: var(--color-login-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 600;
+  transition: filter 160ms ease;
+}
+
+.vault-hero-secondary:hover {
+  filter: brightness(1.05);
 }
 
 @media (max-width: 1080px) {
