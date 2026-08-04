@@ -207,6 +207,10 @@ contract ArcErc8183InvariantTest is StdInvariant, Test {
     uint256 private jobId;
     uint256 private escrowBaseline;
     uint256 private trackedBalance;
+    uint256 private clientBaseline;
+    uint256 private providerBaseline;
+    uint256 private evaluatorBaseline;
+    uint256 private treasuryBaseline;
 
     function setUp() public {
         vm.createSelectFork(vm.envOr("ARC_TESTNET_RPC_URL", string("https://rpc.testnet.arc.io")));
@@ -229,6 +233,10 @@ contract ArcErc8183InvariantTest is StdInvariant, Test {
         COMMERCE.fund(jobId, "");
 
         trackedBalance = _trackedBalance();
+        clientBaseline = USDC.balanceOf(client);
+        providerBaseline = USDC.balanceOf(provider);
+        evaluatorBaseline = USDC.balanceOf(evaluator);
+        treasuryBaseline = USDC.balanceOf(treasury);
         ArcErc8183Handler handler = new ArcErc8183Handler(COMMERCE, provider, evaluator, jobId, expiredAt);
         bytes4[] memory selectors = new bytes4[](4);
         selectors[0] = handler.submit.selector;
@@ -259,6 +267,35 @@ contract ArcErc8183InvariantTest is StdInvariant, Test {
 
     function invariant_TrackedUsdcIsConserved() external view {
         assertEq(_trackedBalance(), trackedBalance);
+    }
+
+    function invariant_CompletedJobPaysExactFeeSplit() external view {
+        IArcAgenticCommerce.Job memory job = COMMERCE.getJob(jobId);
+        if (job.status != IArcAgenticCommerce.JobStatus.Completed) {
+            return;
+        }
+
+        uint256 platformFee = BUDGET * COMMERCE.platformFeeBP() / 10_000;
+        uint256 evaluatorFee = BUDGET * COMMERCE.evaluatorFeeBP() / 10_000;
+        assertEq(USDC.balanceOf(provider), providerBaseline + BUDGET - platformFee - evaluatorFee);
+        assertEq(USDC.balanceOf(evaluator), evaluatorBaseline + evaluatorFee);
+        assertEq(USDC.balanceOf(treasury), treasuryBaseline + platformFee);
+        assertEq(USDC.balanceOf(client), clientBaseline);
+    }
+
+    function invariant_TerminalRefundReturnsExactBudget() external view {
+        IArcAgenticCommerce.Job memory job = COMMERCE.getJob(jobId);
+        if (
+            job.status != IArcAgenticCommerce.JobStatus.Rejected
+                && job.status != IArcAgenticCommerce.JobStatus.Expired
+        ) {
+            return;
+        }
+
+        assertEq(USDC.balanceOf(client), clientBaseline + BUDGET);
+        assertEq(USDC.balanceOf(provider), providerBaseline);
+        assertEq(USDC.balanceOf(evaluator), evaluatorBaseline);
+        assertEq(USDC.balanceOf(treasury), treasuryBaseline);
     }
 
     function _trackedBalance() private view returns (uint256 balance) {
