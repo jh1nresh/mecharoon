@@ -22,7 +22,7 @@ export type SettlementInstruction = {
 
 export type SettlementObservation = {
   adapterEventId: string;
-  state: "unknown" | "confirmed";
+  state: "unknown" | "confirmed" | "failed";
   txHash: string | null;
   amountMinor: string | null;
   amountAtomic: string | null;

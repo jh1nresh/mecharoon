@@ -24,6 +24,9 @@ import type {
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_BYTES = "0x";
 
+// Circle transaction states that can never progress to COMPLETE.
+const TERMINAL_CIRCLE_FAILURE_STATES = new Set(["FAILED", "DENIED", "CANCELLED"]);
+
 const erc8183Abi = parseAbi([
   "function getJob(uint256 jobId) view returns ((uint256 id,address client,address provider,address evaluator,string description,uint256 budget,uint256 expiredAt,uint8 status,address hook))",
   "function paymentToken() view returns (address)",
@@ -140,6 +143,7 @@ function unknownObservation(input: {
   transactionHashes: string[];
   config: ArcAdapterConfig;
   jobId: bigint | null;
+  observationState?: "unknown" | "failed";
 }): SettlementObservation {
   return {
     adapterEventId: transactionEventId({
@@ -149,7 +153,7 @@ function unknownObservation(input: {
       state: input.state,
       txHash: input.txHash,
     }),
-    state: "unknown",
+    state: input.observationState ?? "unknown",
     txHash: null,
     amountMinor: null,
     amountAtomic: null,
@@ -336,6 +340,22 @@ export class ArcErc8183SettlementAdapter implements SettlementAdapter {
       const transaction = await this.circle.getTransaction(created.id);
       if (transaction.txHash) {
         transactionHashes.push(transaction.txHash);
+      }
+      if (TERMINAL_CIRCLE_FAILURE_STATES.has(transaction.state)) {
+        // The deterministic idempotency key pins this transaction forever,
+        // so retrying can never succeed; surface it for manual review
+        // instead of leaving the reservation in permanent quarantine.
+        return unknownObservation({
+          instruction,
+          step: step.name,
+          transactionId: created.id,
+          state: transaction.state,
+          txHash: transaction.txHash,
+          transactionHashes,
+          config: this.config,
+          jobId,
+          observationState: "failed",
+        });
       }
       if (transaction.state !== "COMPLETE" || !transaction.txHash) {
         return unknownObservation({
