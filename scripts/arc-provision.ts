@@ -27,6 +27,12 @@ async function main(): Promise<void> {
   if (!entitySecret) {
     entitySecret = crypto.randomBytes(32).toString('hex');
     generatedEntitySecret = true;
+    // Print before registering: if any later step crashes, the registered
+    // secret must not die with this process.
+    process.stdout.write(
+      `CIRCLE_ENTITY_SECRET=${entitySecret}\n` +
+        '# ^ SAVE THIS LINE TO .env.local NOW; registration happens next.\n',
+    );
     try {
       await registerEntitySecretCiphertext({
         apiKey,
