@@ -279,8 +279,8 @@ export class ArcErc8183SettlementAdapter implements SettlementAdapter {
       },
       {
         name: "budget",
-        walletId: this.config.buyerWalletId,
-        callerAddress: this.config.buyerAddress,
+        walletId: this.config.providerWalletId,
+        callerAddress: this.config.providerAddress,
         contractAddress: this.config.contractAddress,
         signature: "setBudget(uint256,uint256,bytes)",
         parameters: [jobId?.toString(), atomicAmount, EMPTY_BYTES],

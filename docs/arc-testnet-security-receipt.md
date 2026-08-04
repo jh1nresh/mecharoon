@@ -15,6 +15,8 @@ project-specific testnet wallet credentials and funding.
   evaluator wallet.
 - Allowed calls, in order: `createJob`, USDC `approve`, `setBudget`, `fund`,
   `submit`, and `complete`.
+- The provider sets the budget, matching the deployed reference contract's
+  role check; the buyer creates and funds, and the evaluator completes.
 - The browser and API caller cannot provide wallet IDs, addresses, chain,
   contract, function signature, or calldata.
 
@@ -60,7 +62,16 @@ Automated evidence:
 
 - `npm run check`: lint, TypeScript, 26 unit tests, 9 integration tests, 2
   concurrency tests, and production build.
+- `npm run test:contracts`: reads the live Arc chain ID, payment token, proxy
+  implementation slot, and bytecode, then runs 7 lifecycle/fuzz tests plus 2
+  invariants over 64 generated action sequences (1,024 calls).
 - `npm audit --omit=dev`: zero production vulnerabilities.
+
+Arc USDC delegates state-changing transfers to a chain-specific system contract
+that vanilla Foundry cannot execute. The lifecycle tests therefore preserve the
+real deployed ERC-8183 proxy and implementation but replace only the USDC code
+inside the local fork with a minimal test ERC-20. A funded live Circle run is
+still required to verify the native USDC transfer boundary.
 
 ## Residual risk and live blocker
 
