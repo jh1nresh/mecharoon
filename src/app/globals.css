@@ -1633,17 +1633,6 @@ footer {
   display: block;
 }
 
-.vault-heading-icon {
-  position: relative;
-  top: -2px;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  margin-inline: 0.14em;
-  vertical-align: middle;
-  stroke-width: 2.15;
-}
-
 .vault-hero-subcopy {
   max-width: 560px;
   margin: 0;
