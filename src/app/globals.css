@@ -1295,11 +1295,10 @@ footer {
     padding: 10px 11px;
   }
 
+  /* 352px canvas has no room for a fourth card; Arc facts stay on wider
+     viewports. */
   .proof-arcline {
-    bottom: 78px;
-    left: 14px;
-    max-width: calc(100% - 28px);
-    padding: 9px 11px;
+    display: none;
   }
 
   .receipt-check {
