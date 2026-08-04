@@ -5,8 +5,7 @@ import {useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
 import {ArrowRightCircle, Menu, X} from 'lucide-react';
 
-const heroVideoUrl =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_003132_8b7edcb6-c64d-4a52-a9ca-879942e122ad.mp4';
+const heroVideoUrl = '/media/hero/mecharoon-money-flow.mp4';
 
 const heroNavLinks = [
   {label: 'Control loop', href: '#flow'},

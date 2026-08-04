@@ -67,14 +67,17 @@ must never be implied through color alone.
 ## Assets and Ownership
 
 - Existing Mecharoon symbol, wordmark, Hero video, and poster remain unchanged.
+- The hero video is self-hosted at `public/media/hero/mecharoon-money-flow.mp4`
+  (2026-08-03; previously a third-party CloudFront URL).
 - Lower chapters use native React, SVG, CSS, and `motion/react`; no generated
   image is shipped.
-- The externally hosted display font remains the known durability risk.
 
 ## Exact Copy and Typography
 
-- Heading: existing `Helvetica Now Display Bold` route.
-- Body: Inter.
+- Heading: Inter `700` tight-tracked via `next/font` (replaced the externally
+  hosted `Helvetica Now Display Bold` on 2026-08-03 for licensing and
+  durability; keep negative letter-spacing to preserve the display feel).
+- Body: Inter via `next/font`.
 - Technical labels: existing project mono stack.
 - Current claims and the simulated-settlement disclaimer remain unchanged.
 

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --font-heading: "Helvetica Now Display Bold", sans-serif;
+  --font-heading: var(--font-inter), "Inter", sans-serif;
   --font-body: var(--font-inter), "Inter", sans-serif;
   --color-text: #192837;
   --color-accent: #7342e2;
@@ -198,6 +198,7 @@ button {
   content: attr(data-chapter);
   font-family: var(--font-heading);
   font-size: 360px;
+  font-weight: 700;
   line-height: 0.72;
   pointer-events: none;
 }
@@ -262,6 +263,7 @@ button {
   margin: 0;
   font-family: var(--font-heading);
   font-size: clamp(42px, 4vw, 58px);
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 0.98;
 }
@@ -496,6 +498,7 @@ button {
   color: var(--color-accent);
   font-family: var(--font-heading);
   font-size: 18px;
+  font-weight: 700;
 }
 
 .flow-stage > div {
@@ -685,6 +688,7 @@ button {
   margin: 0;
   font-family: var(--font-heading);
   font-size: 18px;
+  font-weight: 700;
 }
 
 .proof-ledger .proof-pass {
@@ -1537,6 +1541,7 @@ footer {
   border-bottom: 1px solid rgba(25, 40, 55, 0.14);
   font-family: var(--font-heading);
   font-size: 24px;
+  font-weight: 700;
   line-height: 1;
 }
 
