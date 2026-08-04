@@ -16,6 +16,8 @@
     "db:seed": "PGDATABASE=${PGDATABASE:-mecharoon_dev} tsx scripts/db-seed.ts",
     "db:reset:test": "PGDATABASE=mecharoon_test tsx scripts/db-reset-test.ts",
     "demo:run": "PGDATABASE=${PGDATABASE:-mecharoon_dev} tsx scripts/demo-run.ts",
+    "arc:provision": "tsx scripts/arc-provision.ts",
+    "arc:live": "PGDATABASE=${PGDATABASE:-mecharoon_dev} tsx scripts/arc-live-run.ts",
     "test:unit": "tsx --test tests/core/*.test.ts",
     "test:contracts": "forge test -vvv",
     "test:integration": "PGDATABASE=mecharoon_test tsx --test --test-concurrency=1 tests/integration/*.test.ts",
