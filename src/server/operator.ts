@@ -270,7 +270,7 @@ async function insertSettlementRecord(
   runtime: Runtime,
   instruction: LockedSettlementRow,
   observation: SettlementObservation,
-  state: "unknown" | "confirmed" | "mismatch",
+  state: "unknown" | "confirmed" | "mismatch" | "failed",
 ): Promise<boolean> {
   const inserted = await client.query(
     `
@@ -340,9 +340,11 @@ async function applyObservation(
   const normalizedState =
     observation.state === "unknown"
       ? "unknown"
-      : matches
-        ? "confirmed"
-        : "mismatch";
+      : observation.state === "failed"
+        ? "failed"
+        : matches
+          ? "confirmed"
+          : "mismatch";
 
   const inserted = await insertSettlementRecord(
     client,
@@ -404,6 +406,60 @@ async function applyObservation(
         reservation_id: instruction.reservation_id,
         settlement_state: "unknown",
         reservation_state: "quarantined",
+        tx_hash: null,
+        final_receipt_id: null,
+      },
+    };
+  }
+
+  if (normalizedState === "failed") {
+    await client.query(
+      `
+        UPDATE mecharoon.settlement_instructions
+        SET state = 'manual_review', updated_at = $2
+        WHERE id = $1
+      `,
+      [instruction.id, runtime.now()],
+    );
+    await client.query(
+      `
+        UPDATE mecharoon.reservations
+        SET state = 'manual_review', updated_at = $2
+        WHERE id = $1
+      `,
+      [instruction.reservation_id, runtime.now()],
+    );
+    await client.query(
+      `
+        UPDATE mecharoon.work_orders
+        SET state = 'manual_review', updated_at = $2
+        WHERE id = $1
+      `,
+      [instruction.work_order_id, runtime.now()],
+    );
+
+    await appendDomainEvent(client, runtime, {
+      aggregateType: "settlement_instruction",
+      aggregateId: instruction.id,
+      eventType: "settlement_step_failed",
+      payload: {
+        adapter_event_id: observation.adapterEventId,
+        external_status: observation.externalStatus,
+        external_job_id: observation.externalJobId,
+        transaction_hashes: observation.transactionHashes,
+      },
+    });
+
+    return {
+      status: "manual_review",
+      reason_code: "SETTLEMENT_STEP_FAILED",
+      next_actions: [{ action: "review_settlement_failure" }],
+      resource: {
+        instruction_id: instruction.id,
+        work_order_id: instruction.work_order_id,
+        reservation_id: instruction.reservation_id,
+        settlement_state: "manual_review",
+        reservation_state: "manual_review",
         tx_hash: null,
         final_receipt_id: null,
       },

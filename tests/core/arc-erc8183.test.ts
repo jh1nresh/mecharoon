@@ -155,6 +155,7 @@ function receipt(step: string, hash: Hash, amount = BigInt(5_000_000)): Transact
 function harness(
   options: {
     pendingStep?: string;
+    failedStep?: string;
     observedAmount?: bigint;
     mismatchedCallStep?: string;
   } = {},
@@ -173,6 +174,9 @@ function harness(
       const step = stepById.get(id) ?? "unknown";
       if (step === options.pendingStep) {
         return { state: "QUEUED", txHash: null };
+      }
+      if (step === options.failedStep) {
+        return { state: "FAILED", txHash: null };
       }
       return { state: "COMPLETE", txHash: `0x${step.padEnd(64, "0")}` as Hash };
     },
@@ -275,6 +279,17 @@ test("a pending Circle step returns unknown and does not advance economic effect
   assert.equal(observation.externalStatus, "fund:queued");
   assert.equal(observation.amountMinor, null);
   assert.equal(calls.length, 4);
+});
+
+test("a terminally failed Circle step returns failed for manual review", async () => {
+  const { adapter, calls } = harness({ failedStep: "approve" });
+  const observation = await adapter.execute(instruction);
+
+  assert.equal(observation.state, "failed");
+  assert.equal(observation.externalStatus, "approve:failed");
+  assert.equal(observation.amountMinor, null);
+  assert.equal(observation.txHash, null);
+  assert.equal(calls.length, 2);
 });
 
 test("mismatched Arc amount never produces a matching local amount", async () => {
